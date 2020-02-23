@@ -2,7 +2,9 @@ from typing import List, Optional
 
 
 class Player:
-    pass
+    @property
+    def opponent(self):
+        raise NotImplementedError
 
 
 class Move:
@@ -14,14 +16,14 @@ class Game:
         raise NotImplementedError
 
     @property
-    def is_terminal(self) -> bool:
+    def is_over(self) -> bool:
         raise NotImplementedError
 
     def show_board(self) -> None:
         raise NotImplementedError
 
     @property
-    def next_player(self) -> Player:
+    def current_player(self) -> Player:
         raise NotImplementedError
 
     @property
@@ -30,19 +32,32 @@ class Game:
 
 
 class GameState:
-    def __init__(self, next_player: Player) -> None:
+    def next(self, move: Move) -> 'GameState':
         raise NotImplementedError
 
-    def play(self, move: Move) -> None:
+    @property
+    def current_player(self) -> Player:
         raise NotImplementedError
 
     def get_legal_moves(self) -> List[Move]:
         raise NotImplementedError
 
+    def winner(self) -> Optional[Player]:
+        raise NotImplementedError
+
     def is_terminal(self) -> bool:
         raise NotImplementedError
 
-    def winner(self) -> Optional[Player]:
+    def is_win(self) -> bool:
+        raise NotImplementedError
+
+    def is_lose(self) -> bool:
+        raise NotImplementedError
+
+    def is_tie(self) -> bool:
+        raise NotImplementedError
+
+    def reverse_player(self) -> 'GameState':
         raise NotImplementedError
 
 

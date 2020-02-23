@@ -1,6 +1,7 @@
+import copy
 import enum
-from collections import namedtuple
-from typing import List, Dict, Optional, Union
+from dataclasses import dataclass
+from typing import Dict
 
 from games.base import *
 
@@ -15,8 +16,15 @@ class TicTacToePlayer(Player, enum.Enum):
                 if self == TicTacToePlayer.O
                 else TicTacToePlayer.O)
 
+    def __repr__(self):
+        return self.name
 
-class TicTacToeMove(Move, namedtuple('TicTacToeMove', ['x', 'y'])):
+
+@dataclass(eq=True, frozen=True)
+class TicTacToeMove(Move):
+    x: int
+    y: int
+
     def __repr__(self):
         return f"({self.x},{self.y})"
 
@@ -24,15 +32,15 @@ class TicTacToeMove(Move, namedtuple('TicTacToeMove', ['x', 'y'])):
 class TicTacToeBoard:
     def __init__(self, size: int) -> None:
         self.size = size
-        self.board: Dict[TicTacToeMove, TicTacToePlayer] = dict()
+        self.grid: Dict[TicTacToeMove, TicTacToePlayer] = dict()
 
-    def play(self, player: TicTacToePlayer, point: TicTacToeMove) -> None:
-        if not self.is_legal_move(point):
+    def play(self, player: TicTacToePlayer, move: TicTacToeMove) -> None:
+        if not self.is_legal_move(move):
             raise IllegalTicTacToeMoveException
-        self.board[point] = player
+        self.grid[move] = player
 
     def get(self, r: int, c: int) -> Optional[TicTacToePlayer]:
-        return self.board.get((r, c))
+        return self.grid.get(TicTacToeMove(r, c))
 
     def get_legal_moves(self) -> List[TicTacToeMove]:
         return [TicTacToeMove(r, c)
@@ -42,7 +50,7 @@ class TicTacToeBoard:
     def is_legal_move(self, move: TicTacToeMove) -> bool:
         return 0 <= move.x < self.size \
                and 0 <= move.y < self.size \
-               and self.board.get(move) is None
+               and self.grid.get(move) is None
 
     def _has_full_row(self, player: TicTacToePlayer) -> bool:
         return any(all(self.get(r, c) == player for c in range(self.size))
@@ -63,37 +71,51 @@ class TicTacToeBoard:
         return self._has_full_row(player) \
                or self._has_full_column(player) \
                or self._has_full_diagonal(player)
+        # return self._has_full_diagonal(player)
 
     def is_full(self) -> bool:
         return all(self.get(r, c) is not None
                    for r in range(self.size)
                    for c in range(self.size))
 
-    def show(self) -> None:
+    def __repr__(self) -> str:
+        result = ''
         for r in range(self.size):
-            print([self._show_point(r, c) for c in range(self.size)])
+            result += ' '.join([self._show_point(r, c) for c in range(self.size)])
+            result += '\n'
+        return result
 
     def _show_point(self, r: int, c: int) -> str:
         player = self.get(r, c)
-        return player.name if player is not None else '-'
+        return repr(player) if player is not None else '-'
+
+    def copy(self) -> 'TicTacToeBoard':
+        return copy.deepcopy(self)
 
 
 class TicTacToeGameState(GameState):
-    def __init__(self, next_player: TicTacToePlayer) -> None:
-        self.board = TicTacToeBoard(3)
-        self.next_player = next_player
+    def __init__(self, board: TicTacToeBoard, player: TicTacToePlayer) -> None:
+        super().__init__()
+        self.board = board
+        self.player = player
 
-    def play(self, move: TicTacToeMove) -> None:
+    @classmethod
+    def get_initial_state(self):
+        return TicTacToeGameState(TicTacToeBoard(3), TicTacToePlayer.X)
+
+    @property
+    def current_player(self) -> Player:
+        return self.player
+
+    def next(self, move: TicTacToeMove) -> 'TicTacToeGameState':
         if self.is_terminal():
             raise IllegalTicTacToeMoveException("Game has ended.")
-        self.board.play(self.next_player, move)
-        self.next_player = self.next_player.opponent
+        next_board = self.board.copy()
+        next_board.play(self.player, move)
+        return TicTacToeGameState(next_board, self.player.opponent)
 
     def get_legal_moves(self) -> List[TicTacToeMove]:
         return self.board.get_legal_moves()
-
-    def is_terminal(self) -> bool:
-        return self.winner() is not None or self.board.is_full()
 
     def winner(self) -> Optional[TicTacToePlayer]:
         if self.board.has_won(TicTacToePlayer.X):
@@ -103,25 +125,43 @@ class TicTacToeGameState(GameState):
         else:
             return None
 
+    def is_terminal(self) -> bool:
+        return self.is_win() or self.is_lose() or self.is_tie()
+
+    def is_win(self) -> bool:
+        return self.winner() == self.player
+
+    def is_lose(self) -> bool:
+        return self.winner() == self.player.opponent
+
+    def is_tie(self) -> bool:
+        return self.winner() is None and self.board.is_full()
+
+    def reverse_player(self) -> 'GameState':
+        # reversed_board = self.board.copy()
+        # for p in self.board.grid:
+        #     reversed_board.grid[p] = self.board.grid[p].opponent
+        return TicTacToeGameState(self.board.copy(), self.player.opponent)
+
 
 class TicTacToeGame(Game):
     def __init__(self):
         super().__init__()
-        self.state = TicTacToeGameState(TicTacToePlayer.X)
+        self.state = TicTacToeGameState.get_initial_state()
 
     def play(self, move: TicTacToeMove):
-        self.state.play(move)
-
-    @property
-    def is_terminal(self) -> bool:
-        return self.state.is_terminal()
+        self.state = self.state.next(move)
 
     def show_board(self) -> None:
-        self.state.board.show()
+        print(self.state.board)
 
     @property
-    def next_player(self) -> TicTacToePlayer:
-        return self.state.next_player
+    def is_over(self) -> bool:
+        return self.state.is_terminal()
+
+    @property
+    def current_player(self) -> TicTacToePlayer:
+        return self.state.player
 
     @property
     def winner(self) -> TicTacToePlayer:
