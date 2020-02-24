@@ -35,7 +35,9 @@ class AlphaBetaAgent(Agent):
 
     def _max_value(self, state: GameState, depth: int, alpha: float, beta: float) -> float:
         v = float('-inf')
-        for move in state.get_legal_moves():
+        legal_moves = state.get_legal_moves()
+        random.shuffle(legal_moves)
+        for move in legal_moves:
             next_state = state.next(move)
             branch_value = self._value(next_state, depth - 1, alpha, beta)
             v = max(v, branch_value)
@@ -46,7 +48,9 @@ class AlphaBetaAgent(Agent):
 
     def _min_value(self, state: GameState, depth: int, alpha: float, beta: float) -> float:
         v = float('+inf')
-        for move in state.get_legal_moves():
+        legal_moves = state.get_legal_moves()
+        random.shuffle(legal_moves)
+        for move in legal_moves:
             next_state = state.next(move)
             branch_value = self._value(next_state, depth - 1, alpha, beta)
             v = min(v, branch_value)
