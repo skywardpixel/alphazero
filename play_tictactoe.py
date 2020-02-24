@@ -1,5 +1,6 @@
-from agents.minimax import MinimaxAgent, AlphaBetaAgent
-from games.tictactoe import TicTacToeGame, TicTacToeMove, TicTacToePlayer, GameState, Player
+from agents.minimax.alphabeta import AlphaBetaAgent
+from games.tictactoe.eval_functions import simple_eval_func
+from games.tictactoe.tictactoe import TicTacToeGame, TicTacToeMove, TicTacToePlayer
 
 
 def read_move(player: TicTacToePlayer) -> TicTacToeMove:
@@ -8,18 +9,8 @@ def read_move(player: TicTacToePlayer) -> TicTacToeMove:
     return TicTacToeMove(x, y)
 
 
-def simple_eval_func(state: GameState, player: Player) -> float:
-    if state.current_player != player:
-        state = state.reverse_player()
-    if state.is_win():
-        return 99999.
-    elif state.is_lose():
-        return -99999.
-    else:
-        return 0.
-
-
 game = TicTacToeGame()
+# TODO: fix typing for eval_fn
 agent = AlphaBetaAgent(TicTacToePlayer.O, depth=6, eval_fn=simple_eval_func)
 
 while not game.is_over:

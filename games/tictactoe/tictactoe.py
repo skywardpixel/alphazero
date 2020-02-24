@@ -71,9 +71,8 @@ class TicTacToeBoard:
         return self._has_full_row(player) \
                or self._has_full_column(player) \
                or self._has_full_diagonal(player)
-        # return self._has_full_diagonal(player)
 
-    def is_full(self) -> bool:
+    def full(self) -> bool:
         return all(self.get(r, c) is not None
                    for r in range(self.size)
                    for c in range(self.size))
@@ -135,7 +134,7 @@ class TicTacToeGameState(GameState):
         return self.winner() == self.player.opponent
 
     def is_tie(self) -> bool:
-        return self.winner() is None and self.board.is_full()
+        return self.winner() is None and self.board.full()
 
     def reverse_player(self) -> 'GameState':
         # reversed_board = self.board.copy()
