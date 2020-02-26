@@ -30,7 +30,7 @@ class TicTacToeMove(Move):
 
 
 class TicTacToeBoard:
-    def __init__(self, size: int) -> None:
+    def __init__(self, size: int = 3) -> None:
         self.size = size
         self.grid: Dict[TicTacToeMove, TicTacToePlayer] = dict()
 
@@ -99,8 +99,8 @@ class TicTacToeGameState(GameState):
         self.player = player
 
     @classmethod
-    def get_initial_state(self):
-        return TicTacToeGameState(TicTacToeBoard(3), TicTacToePlayer.X)
+    def get_initial_state(self, size: int = 3):
+        return TicTacToeGameState(TicTacToeBoard(size), TicTacToePlayer.X)
 
     @property
     def current_player(self) -> Player:
@@ -144,9 +144,9 @@ class TicTacToeGameState(GameState):
 
 
 class TicTacToeGame(Game):
-    def __init__(self):
+    def __init__(self, size: int = 3):
         super().__init__()
-        self.state = TicTacToeGameState.get_initial_state()
+        self.state = TicTacToeGameState.get_initial_state(size)
 
     def play(self, move: TicTacToeMove):
         self.state = self.state.next(move)
