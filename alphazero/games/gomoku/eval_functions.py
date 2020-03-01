@@ -1,4 +1,4 @@
-from games.tictactoe import TicTacToeGameState, TicTacToePlayer
+from alphazero.games.tictactoe import TicTacToeGameState, TicTacToePlayer
 
 
 def simple_eval_func(state: TicTacToeGameState, player: TicTacToePlayer) -> float:

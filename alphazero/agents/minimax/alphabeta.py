@@ -1,12 +1,15 @@
 import random
 from typing import Callable
 
-from agents.base import Agent
-from games.base import Player, GameState, Move
+from alphazero.agents.base import Agent
+from alphazero.games.base import Player, GameState, Move
 
 
 class AlphaBetaAgent(Agent):
-    def __init__(self, player: Player, depth: int, eval_fn: Callable[[GameState, Player], float]) -> None:
+    def __init__(self,
+                 player: Player,
+                 depth: int,
+                 eval_fn: Callable[[GameState, Player], float]) -> None:
         self.player = player
         self.depth = depth
         self.eval_fn = eval_fn

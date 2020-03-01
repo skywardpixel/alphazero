@@ -1,6 +1,6 @@
 from typing import List
 
-from games.base import GameState, Move
+from alphazero.games.base import GameState, Move
 
 
 class MCTSNode:

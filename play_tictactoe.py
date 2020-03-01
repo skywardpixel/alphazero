@@ -1,8 +1,8 @@
 import os
 
-from agents.minimax.alphabeta import AlphaBetaAgent
-from games.tictactoe.eval_functions import simple_eval_func, better_eval_func
-from games.tictactoe.tictactoe import TicTacToeGame, TicTacToeMove, TicTacToePlayer
+from alphazero.agents.minimax import AlphaBetaAgent
+from alphazero.games.tictactoe.eval_functions import better_eval_func
+from alphazero.games.tictactoe.tictactoe import TicTacToeGame, TicTacToeMove, TicTacToePlayer
 
 
 def clear():

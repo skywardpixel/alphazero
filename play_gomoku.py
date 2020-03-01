@@ -1,8 +1,8 @@
 import os
 
-from agents.minimax import AlphaBetaAgent
-from games.gomoku import GomokuGame, GomokuPlayer, GomokuMove
-from games.gomoku.eval_functions import simple_eval_func
+from alphazero.agents.minimax import AlphaBetaAgent
+from alphazero.games.gomoku import GomokuPlayer, GomokuMove, GomokuGame
+from alphazero.games.gomoku.eval_functions import simple_eval_func
 
 
 def clear():

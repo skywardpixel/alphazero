@@ -1,9 +1,9 @@
 import copy
 import enum
 from dataclasses import dataclass
-from typing import Dict, Sequence
+from typing import Dict, Sequence, Optional, List
 
-from games.base import *
+from alphazero.games.base import Move, Player, GameState, Game, IllegalMoveException
 
 
 class GomokuPlayer(Player, enum.Enum):
@@ -35,7 +35,7 @@ class GomokuBoard:
         self.n = n
         self.grid: Dict[GomokuMove, GomokuPlayer] = dict()
 
-    def play(self, player: GomokuPlayer, move: GomokuMove) -> None:
+    def apply_move(self, player: GomokuPlayer, move: GomokuMove) -> None:
         if not self.is_legal_move(move):
             raise IllegalGomokuMoveException
         self.grid[move] = player
@@ -158,7 +158,7 @@ class GomokuGameState(GameState):
         self.player = player
 
     @classmethod
-    def get_initial_state(self, size: int = 15, n: int = 5):
+    def get_initial_state(cls, size: int = 15, n: int = 5):
         return GomokuGameState(GomokuBoard(size, n), GomokuPlayer.BLACK)
 
     @property
@@ -169,7 +169,7 @@ class GomokuGameState(GameState):
         if self.is_terminal():
             raise IllegalGomokuMoveException("Game has ended.")
         next_board = self.board.copy()
-        next_board.play(self.player, move)
+        next_board.apply_move(self.player, move)
         return GomokuGameState(next_board, self.player.opponent)
 
     def get_legal_moves(self) -> List[GomokuMove]:

@@ -1,9 +1,9 @@
 import copy
 import enum
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Optional, List
 
-from games.base import *
+from alphazero.games.base import Player, Move, GameState, Game, IllegalMoveException
 
 
 class TicTacToePlayer(Player, enum.Enum):
@@ -34,7 +34,7 @@ class TicTacToeBoard:
         self.size = size
         self.grid: Dict[TicTacToeMove, TicTacToePlayer] = dict()
 
-    def play(self, player: TicTacToePlayer, move: TicTacToeMove) -> None:
+    def apply_move(self, player: TicTacToePlayer, move: TicTacToeMove) -> None:
         if not self.is_legal_move(move):
             raise IllegalTicTacToeMoveException
         self.grid[move] = player
@@ -99,7 +99,7 @@ class TicTacToeGameState(GameState):
         self.player = player
 
     @classmethod
-    def get_initial_state(self, size: int = 3):
+    def get_initial_state(cls, size: int = 3):
         return TicTacToeGameState(TicTacToeBoard(size), TicTacToePlayer.X)
 
     @property
@@ -110,7 +110,7 @@ class TicTacToeGameState(GameState):
         if self.is_terminal():
             raise IllegalTicTacToeMoveException("Game has ended.")
         next_board = self.board.copy()
-        next_board.play(self.player, move)
+        next_board.apply_move(self.player, move)
         return TicTacToeGameState(next_board, self.player.opponent)
 
     def get_legal_moves(self) -> List[TicTacToeMove]:
