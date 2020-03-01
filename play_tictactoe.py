@@ -25,7 +25,7 @@ while not game.is_over:
     # print(f"current state score by eval func: {agent.eval_fn(game.state, agent.player)}")
     if game.current_player == TicTacToePlayer.X:
         move = read_move(game.current_player)
-        while not game.state.board.is_legal_move(move):
+        while not game.state.board.is_legal_point(move):
             print("Illegal move, try again")
             move = read_move(game.current_player)
     else:

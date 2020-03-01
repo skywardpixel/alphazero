@@ -16,7 +16,7 @@ class GomokuPlayer(Player, enum.Enum):
                 if self == GomokuPlayer.WHITE
                 else GomokuPlayer.WHITE)
 
-    def __repr__(self):
+    def __str__(self):
         return '●' if self == GomokuPlayer.BLACK else '○'
 
 
@@ -25,28 +25,28 @@ class GomokuMove(Move):
     x: int
     y: int
 
-    def __repr__(self):
-        return f"({self.x},{self.y})"
+    def __str__(self):
+        return f'({self.x},{self.y})'
 
 
 class GomokuBoard:
     def __init__(self, size: int = 15, n: int = 5) -> None:
         self.size = size
         self.n = n
-        self.grid: Dict[GomokuMove, GomokuPlayer] = dict()
+        self._grid: Dict[GomokuMove, GomokuPlayer] = dict()
 
     def apply_move(self, player: GomokuPlayer, move: GomokuMove) -> None:
         if not self.is_legal_move(move):
             raise IllegalGomokuMoveException
-        self.grid[move] = player
+        self._grid[move] = player
 
     def get(self, r: int, c: int) -> Optional[GomokuPlayer]:
-        return self.grid.get(GomokuMove(r, c))
+        return self._grid.get(GomokuMove(r, c))
 
     def get_legal_moves(self, within: Optional[int] = None) -> List[GomokuMove]:
         if within is not None:
             moves = set()
-            for p in self.grid:
+            for p in self._grid:
                 for r in range(p.x - within, p.x + within + 1):
                     for c in range(p.y - within, p.y + within + 1):
                         move = GomokuMove(r, c)
@@ -61,7 +61,7 @@ class GomokuBoard:
     def is_legal_move(self, move: GomokuMove) -> bool:
         return 0 <= move.x < self.size \
                and 0 <= move.y < self.size \
-               and self.grid.get(move) is None
+               and self._grid.get(move) is None
 
     def has_won(self, player: GomokuPlayer) -> bool:
         return self._has_win_in_a_row(player) \
@@ -136,7 +136,7 @@ class GomokuBoard:
                    for r in range(self.size)
                    for c in range(self.size))
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         result = ''
         for r in range(self.size):
             result += ' '.join([self._show_point(r, c) for c in range(self.size)])
@@ -145,7 +145,7 @@ class GomokuBoard:
 
     def _show_point(self, r: int, c: int) -> str:
         player = self.get(r, c)
-        return repr(player) if player is not None else '-'
+        return str(player) if player is not None else '-'
 
     def copy(self) -> 'GomokuBoard':
         return copy.deepcopy(self)

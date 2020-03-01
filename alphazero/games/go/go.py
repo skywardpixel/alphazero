@@ -1,9 +1,10 @@
 import copy
 import enum
 from dataclasses import dataclass
-from typing import Dict, Collection, Optional, List
+from typing import Dict, Optional, List, AbstractSet
 
 from alphazero.games.base import IllegalMoveException, Player, GameState, Move, Game
+from alphazero.games.go.zobrist_hashing import EMPTY_BOARD, HASH_CODE
 
 
 class GoPlayer(Player, enum.Enum):
@@ -16,7 +17,7 @@ class GoPlayer(Player, enum.Enum):
                 if self == GoPlayer.WHITE
                 else GoPlayer.WHITE)
 
-    def __repr__(self):
+    def __str__(self):
         return '●' if self == GoPlayer.BLACK else '○'
 
 
@@ -25,7 +26,15 @@ class GoPoint:
     x: int
     y: int
 
-    def __repr__(self):
+    def neighbors(self):
+        return [
+            GoPoint(self.x - 1, self.y),
+            GoPoint(self.x + 1, self.y),
+            GoPoint(self.x, self.y - 1),
+            GoPoint(self.x, self.y + 1),
+        ]
+
+    def __str__(self):
         return f"({self.x},{self.y})"
 
 
@@ -43,7 +52,7 @@ class GoMove(Move):
         self.is_resign = is_resign
 
     @property
-    def is_set_stone(self) -> bool:
+    def is_play(self) -> bool:
         return self.point is not None
 
     @property
@@ -58,12 +67,24 @@ class GoMove(Move):
             raise Exception('Move is resign or pass')
         return self.point.y
 
+    @classmethod
+    def play(cls, x, y) -> 'GoMove':
+        return GoMove(GoPoint(x, y))
+
+    @classmethod
+    def pass_turn(cls) -> 'GoMove':
+        return GoMove(is_pass=True)
+
+    @classmethod
+    def resign(cls) -> 'GoMove':
+        return GoMove(is_resign=True)
+
 
 class GoString:
     def __init__(self,
                  player: GoPlayer,
-                 stones: Collection[GoPlayer],
-                 liberties: Collection[GoMove]):
+                 stones: AbstractSet[GoPoint],
+                 liberties: AbstractSet[GoPoint]):
         self.player = player
         self.stones = frozenset(stones)
         self.liberties = frozenset(liberties)
@@ -89,27 +110,74 @@ class GoString:
 class GoBoard:
     def __init__(self, size: int = 15) -> None:
         self.size = size
-        self.grid: Dict[GoPoint, GoPlayer] = dict()
+        self._grid: Dict[GoPoint, GoString] = dict()
+        self._hash = EMPTY_BOARD
 
-    def apply_move(self, player: GoPlayer, move: GoMove) -> None:
-        if not self.is_legal_move(move):
+    def place_stone(self, player: GoPlayer, point: GoPoint) -> None:
+        if not self.is_legal_point(point):
             raise IllegalGoMoveException
-        self.grid[move] = player
+        adjacent_friendly = set()
+        adjacent_enemy = set()
+        liberties = set()
+        for neighbor in point.neighbors():
+            if self.is_within_bounds(neighbor):
+                neighbor_string = self._grid.get(neighbor)
+                if neighbor_string is None:
+                    liberties.add(neighbor)
+                elif neighbor_string.player == player:
+                    adjacent_friendly.add(neighbor_string)
+                else:
+                    adjacent_enemy.add(neighbor_string)
+        new_string = GoString(player, {point}, liberties)
+
+        for friendly in adjacent_friendly:
+            new_string = new_string.merge(friendly)
+        for point in new_string:
+            self._grid[point] = new_string
+
+        # apply hash code
+        self._hash ^= HASH_CODE[point, player]
+
+        for enemy in adjacent_enemy:
+            new_enemy = enemy.remove_liberty(point)
+            if new_enemy.liberties:
+                self._replace_string(new_enemy)
+            else:
+                self._remove_string(enemy)
+
+    def _replace_string(self, new_string: GoString) -> None:
+        for point in new_string.stones:
+            self._grid[point] = new_string
+
+    def _remove_string(self, string: GoString) -> None:
+        for point in string.stones:
+            for neighbor in point.neighbors():
+                neighbor_string = self._grid.get(neighbor)
+                if neighbor_string is None:
+                    continue
+                if neighbor_string is not string:
+                    self._replace_string(neighbor_string.add_liberty(point))
+            self._grid[point] = None
+
+            self._hash ^= HASH_CODE[point, string.player]  # <3>
+
+    def get_string(self, r: int, c: int) -> Optional[GoString]:
+        return self._grid.get(GoPoint(r, c))
 
     def get(self, r: int, c: int) -> Optional[GoPlayer]:
-        return self.grid.get(GoPoint(r, c))
+        string = self.get_string(r, c)
+        return string.player if string is not None else None
 
     def get_legal_points(self) -> List[GoPoint]:
         return [GoPoint(r, c)
                 for r in range(self.size) for c in range(self.size)
                 if self.get(r, c) is None]
 
-    def is_legal_move(self, move: GoMove) -> bool:
-        if not move.is_set_stone:
-            return True
-        return 0 <= move.x < self.size \
-               and 0 <= move.y < self.size \
-               and self.grid.get(move) is None
+    def is_legal_point(self, point: GoPoint) -> bool:
+        return self.is_within_bounds(point) and self._grid.get(point) is None
+
+    def is_within_bounds(self, point: GoPoint):
+        return 0 <= point.x < self.size and 0 <= point.y < self.size
 
     def has_won(self, player: GoPlayer) -> bool:
         raise NotImplementedError
@@ -119,7 +187,7 @@ class GoBoard:
                    for r in range(self.size)
                    for c in range(self.size))
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         result = ''
         for r in range(self.size):
             result += ' '.join([self._show_point(r, c) for c in range(self.size)])
@@ -128,7 +196,7 @@ class GoBoard:
 
     def _show_point(self, r: int, c: int) -> str:
         player = self.get(r, c)
-        return repr(player) if player is not None else '-'
+        return str(player) if player is not None else '-'
 
     def copy(self) -> 'GoBoard':
         return copy.deepcopy(self)
@@ -161,12 +229,12 @@ class GoGameState(GameState):
         elif move.is_pass:
             return GoGameState(next_board, self.player.opponent)
         else:
-            next_board.apply_move(self.player, move)
+            next_board.place_stone(self.player, move.point)
             return GoGameState(next_board, self.player.opponent)
 
     def get_legal_moves(self) -> List[GoMove]:
         return [GoMove(p) for p in self.board.get_legal_points()] \
-               + [GoMove(is_pass=True), GoMove(is_pass=True)]
+               + [GoMove.pass_turn(), GoMove.resign()]
 
     def winner(self) -> Optional[GoPlayer]:
         if self.resigned is not None:

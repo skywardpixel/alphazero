@@ -16,7 +16,7 @@ class TicTacToePlayer(Player, enum.Enum):
                 if self == TicTacToePlayer.O
                 else TicTacToePlayer.O)
 
-    def __repr__(self):
+    def __str__(self):
         return self.name
 
 
@@ -25,22 +25,22 @@ class TicTacToeMove(Move):
     x: int
     y: int
 
-    def __repr__(self):
+    def __str__(self):
         return f"({self.x},{self.y})"
 
 
 class TicTacToeBoard:
     def __init__(self, size: int = 3) -> None:
         self.size = size
-        self.grid: Dict[TicTacToeMove, TicTacToePlayer] = dict()
+        self._grid: Dict[TicTacToeMove, TicTacToePlayer] = dict()
 
     def apply_move(self, player: TicTacToePlayer, move: TicTacToeMove) -> None:
         if not self.is_legal_move(move):
             raise IllegalTicTacToeMoveException
-        self.grid[move] = player
+        self._grid[move] = player
 
     def get(self, r: int, c: int) -> Optional[TicTacToePlayer]:
-        return self.grid.get(TicTacToeMove(r, c))
+        return self._grid.get(TicTacToeMove(r, c))
 
     def get_legal_moves(self) -> List[TicTacToeMove]:
         return [TicTacToeMove(r, c)
@@ -50,7 +50,7 @@ class TicTacToeBoard:
     def is_legal_move(self, move: TicTacToeMove) -> bool:
         return 0 <= move.x < self.size \
                and 0 <= move.y < self.size \
-               and self.grid.get(move) is None
+               and self._grid.get(move) is None
 
     def _has_full_row(self, player: TicTacToePlayer) -> bool:
         return any(all(self.get(r, c) == player for c in range(self.size))
@@ -77,7 +77,7 @@ class TicTacToeBoard:
                    for r in range(self.size)
                    for c in range(self.size))
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         result = ''
         for r in range(self.size):
             result += ' '.join([self._show_point(r, c) for c in range(self.size)])
@@ -86,7 +86,7 @@ class TicTacToeBoard:
 
     def _show_point(self, r: int, c: int) -> str:
         player = self.get(r, c)
-        return repr(player) if player is not None else '-'
+        return str(player) if player is not None else '-'
 
     def copy(self) -> 'TicTacToeBoard':
         return copy.deepcopy(self)
