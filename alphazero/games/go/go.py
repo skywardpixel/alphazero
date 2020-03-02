@@ -18,6 +18,13 @@ class GoGameState(GameState):
         self.board = board
         self.player = player
         self.previous_state = previous_state
+        if self.previous_state is None:
+            self.previous_states = frozenset()
+        else:
+            self.previous_states = frozenset(
+                previous_state.previous_states |
+                {(previous_state.player, previous_state.board.zobrist_hash())}
+            )
         self.last_move = last_move
 
     @classmethod
@@ -48,7 +55,18 @@ class GoGameState(GameState):
         if move.is_resign or move.is_pass:
             return True
         is_self_capture = self.board.is_move_self_capture(self.player, move.point)
-        return self.board.get(move.x, move.y) is None and not is_self_capture
+        does_violate_ko = self.does_move_violate_ko(self.player, move)
+        return self.board.get(move.x, move.y) is None \
+               and not is_self_capture \
+               and not does_violate_ko
+
+    def does_move_violate_ko(self, player, move):
+        if not move.is_play:
+            return False
+        next_board = self.board.copy()
+        next_board.place_stone(player, move.point)
+        next_situation = (player.other, next_board.zobrist_hash())
+        return next_situation in self.previous_states
 
     def winner(self) -> Optional[GoPlayer]:
         if not self.is_terminal():
