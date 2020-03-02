@@ -1,7 +1,8 @@
-from alphazero.games.tictactoe import TicTacToeGameState, TicTacToePlayer
+from .gomoku import GomokuGameState
+from .player import GomokuPlayer
 
 
-def simple_eval_func(state: TicTacToeGameState, player: TicTacToePlayer) -> float:
+def simple_eval_func(state: GomokuGameState, player: GomokuPlayer) -> float:
     if state.current_player != player:
         state = state.reverse_player()
     if state.is_win():

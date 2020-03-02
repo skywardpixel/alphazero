@@ -2,7 +2,9 @@ import os
 
 from alphazero.agents.minimax import AlphaBetaAgent
 from alphazero.games.tictactoe.eval_functions import better_eval_func
-from alphazero.games.tictactoe.tictactoe import TicTacToeGame, TicTacToeMove, TicTacToePlayer
+from alphazero.games.tictactoe.tictactoe import TicTacToeGame
+from alphazero.games.tictactoe.move import TicTacToeMove
+from alphazero.games.tictactoe.player import TicTacToePlayer
 
 
 def clear():
@@ -28,7 +30,7 @@ while not game.is_over:
     # print(f"current state score by eval func: {agent.eval_fn(game.state, agent.player)}")
     if game.current_player == TicTacToePlayer.X:
         move = read_move(game.current_player)
-        while not game.state.board.is_empty_point(move):
+        while not game.state.is_legal_move(move):
             print("Illegal move, try again")
             move = read_move(game.current_player)
     else:

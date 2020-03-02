@@ -1,95 +1,10 @@
-import copy
-import enum
-from dataclasses import dataclass
-from typing import Dict, Optional, List
+from typing import Optional, List
 
-from alphazero.games.base import Player, Move, GameState, Game, IllegalMoveException
-
-
-class TicTacToePlayer(Player, enum.Enum):
-    X = 0
-    O = 1
-
-    @property
-    def opponent(self):
-        return (TicTacToePlayer.X
-                if self == TicTacToePlayer.O
-                else TicTacToePlayer.O)
-
-    def __str__(self):
-        return self.name
-
-
-@dataclass(eq=True, frozen=True)
-class TicTacToeMove(Move):
-    x: int
-    y: int
-
-    def __str__(self):
-        return f"({self.x},{self.y})"
-
-
-class TicTacToeBoard:
-    def __init__(self, size: int = 3) -> None:
-        self.size = size
-        self._grid: Dict[TicTacToeMove, TicTacToePlayer] = dict()
-
-    def apply_move(self, player: TicTacToePlayer, move: TicTacToeMove) -> None:
-        if not self.is_legal_move(move):
-            raise IllegalTicTacToeMoveException
-        self._grid[move] = player
-
-    def get(self, r: int, c: int) -> Optional[TicTacToePlayer]:
-        return self._grid.get(TicTacToeMove(r, c))
-
-    def get_legal_moves(self) -> List[TicTacToeMove]:
-        return [TicTacToeMove(r, c)
-                for r in range(self.size) for c in range(self.size)
-                if self.get(r, c) is None]
-
-    def is_legal_move(self, move: TicTacToeMove) -> bool:
-        return 0 <= move.x < self.size \
-               and 0 <= move.y < self.size \
-               and self._grid.get(move) is None
-
-    def _has_full_row(self, player: TicTacToePlayer) -> bool:
-        return any(all(self.get(r, c) == player for c in range(self.size))
-                   for r in range(self.size))
-
-    def _has_full_column(self, player: TicTacToePlayer) -> bool:
-        return any(all(self.get(r, c) == player for r in range(self.size))
-                   for c in range(self.size))
-
-    def _has_full_diagonal(self, player: TicTacToePlayer) -> bool:
-        major = all(self.get(i, i) == player
-                    for i in range(self.size))
-        minor = all(self.get(i, self.size - 1 - i) == player
-                    for i in range(self.size))
-        return major or minor
-
-    def has_won(self, player: TicTacToePlayer) -> bool:
-        return self._has_full_row(player) \
-               or self._has_full_column(player) \
-               or self._has_full_diagonal(player)
-
-    def full(self) -> bool:
-        return all(self.get(r, c) is not None
-                   for r in range(self.size)
-                   for c in range(self.size))
-
-    def __str__(self) -> str:
-        result = ''
-        for r in range(self.size):
-            result += ' '.join([self._show_point(r, c) for c in range(self.size)])
-            result += '\n'
-        return result
-
-    def _show_point(self, r: int, c: int) -> str:
-        player = self.get(r, c)
-        return str(player) if player is not None else '-'
-
-    def copy(self) -> 'TicTacToeBoard':
-        return copy.deepcopy(self)
+from alphazero.games.base import Player, GameState, Game
+from .board import TicTacToeBoard
+from .exception import IllegalTicTacToeMoveException
+from .move import TicTacToeMove
+from .player import TicTacToePlayer
 
 
 class TicTacToeGameState(GameState):
@@ -99,7 +14,7 @@ class TicTacToeGameState(GameState):
         self.player = player
 
     @classmethod
-    def get_initial_state(cls, size: int = 3):
+    def get_initial_state(cls, size: int = 3) -> 'TicTacToeGameState':
         return TicTacToeGameState(TicTacToeBoard(size), TicTacToePlayer.X)
 
     @property
@@ -115,6 +30,9 @@ class TicTacToeGameState(GameState):
 
     def get_legal_moves(self) -> List[TicTacToeMove]:
         return self.board.get_legal_moves()
+
+    def is_legal_move(self, move: TicTacToeMove) -> bool:
+        return self.board.is_legal_move(move)
 
     def winner(self) -> Optional[TicTacToePlayer]:
         if self.board.has_won(TicTacToePlayer.X):
@@ -165,7 +83,3 @@ class TicTacToeGame(Game):
     @property
     def winner(self) -> TicTacToePlayer:
         return self.state.winner()
-
-
-class IllegalTicTacToeMoveException(IllegalMoveException):
-    pass
