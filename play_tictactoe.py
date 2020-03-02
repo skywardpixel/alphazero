@@ -6,7 +6,10 @@ from alphazero.games.tictactoe.tictactoe import TicTacToeGame, TicTacToeMove, Ti
 
 
 def clear():
-    os.system('cls') if os.name == 'nt' else os.system('clear')
+    if os.name == 'nt':
+        os.system('cls')
+    else:
+        os.system('clear')
 
 
 def read_move(player: TicTacToePlayer) -> TicTacToeMove:
@@ -25,7 +28,7 @@ while not game.is_over:
     # print(f"current state score by eval func: {agent.eval_fn(game.state, agent.player)}")
     if game.current_player == TicTacToePlayer.X:
         move = read_move(game.current_player)
-        while not game.state.board.is_legal_point(move):
+        while not game.state.board.is_empty_point(move):
             print("Illegal move, try again")
             move = read_move(game.current_player)
     else:

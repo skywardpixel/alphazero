@@ -6,7 +6,10 @@ from alphazero.games.gomoku.eval_functions import simple_eval_func
 
 
 def clear():
-    os.system('cls') if os.name == 'nt' else os.system('clear')
+    if os.name == 'nt':
+        os.system('cls')
+    else:
+        os.system('clear')
 
 
 def read_move(player: GomokuPlayer) -> GomokuMove:
@@ -24,7 +27,7 @@ while not game.is_over:
     # print(f"current state score by eval func: {agent.eval_fn(game.state, agent.player)}")
     if game.current_player == GomokuPlayer.BLACK:
         move = read_move(game.current_player)
-        while not game.state.board.is_legal_point(move):
+        while not game.state.is_legal_move(move):
             print('Illegal move, try again')
             move = read_move(game.current_player)
     else:

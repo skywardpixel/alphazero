@@ -1,4 +1,5 @@
-from .go import GoPlayer, GoPoint
+from .player import GoPlayer
+from .point import GoPoint
 
 HASH_CODE = {
     (GoPoint(x=0, y=0), GoPlayer.BLACK): 2035505079727482269,

@@ -175,6 +175,9 @@ class GomokuGameState(GameState):
     def get_legal_moves(self) -> List[GomokuMove]:
         return self.board.get_legal_moves(within=2)
 
+    def is_legal_move(self, move: GomokuMove) -> bool:
+        return self.board.is_legal_move(move)
+
     def winner(self) -> Optional[GomokuPlayer]:
         if self.board.has_won(GomokuPlayer.BLACK):
             return GomokuPlayer.BLACK

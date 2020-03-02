@@ -1,6 +1,7 @@
 import random
 
-from alphazero.games.go.go import GoPlayer, GoPoint
+from alphazero.games.go.point import GoPoint
+from alphazero.games.go.player import GoPlayer
 
 SIZE = 9
 
@@ -23,7 +24,8 @@ for row in range(SIZE):
             code = random.randint(0, MAX63)
             table[GoPoint(row, col), state] = code
 
-print('from .go import GoPlayer, GoPoint')
+print('from .player import GoPlayer')
+print('from .point import GoPoint')
 print()
 print('HASH_CODE = {')
 for (point, state), hash_code in table.items():
