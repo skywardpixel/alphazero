@@ -1,6 +1,6 @@
 import os
 
-from alphazero.agents.minimax import AlphaBetaAgent
+from alphazero.agents.alphabeta import AlphaBetaAgent
 from alphazero.games.tictactoe.eval_functions import better_eval_func
 from alphazero.games.tictactoe.tictactoe import TicTacToeGame
 from alphazero.games.tictactoe.move import TicTacToeMove
