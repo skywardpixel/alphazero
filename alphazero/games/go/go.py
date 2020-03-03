@@ -54,11 +54,9 @@ class GoGameState(GameState):
             return False
         if move.is_resign or move.is_pass:
             return True
-        is_self_capture = self.board.is_move_self_capture(self.player, move.point)
-        does_violate_ko = self.does_move_violate_ko(self.player, move)
         return self.board.get(move.x, move.y) is None \
-               and not is_self_capture \
-               and not does_violate_ko
+               and not self.board.is_move_self_capture(self.player, move.point) \
+               and not self.does_move_violate_ko(self.player, move)
 
     def does_move_violate_ko(self, player, move):
         if not move.is_play:
