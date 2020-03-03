@@ -1,10 +1,10 @@
 import copy
 from typing import Dict, Optional, List
 
-from alphazero.games.go.string import GoString
 from .exception import IllegalGoMoveException
 from .player import GoPlayer
 from .point import GoPoint
+from .string import GoString
 from .zobrist_hashing import EMPTY_BOARD, HASH_CODE
 
 
@@ -42,11 +42,11 @@ class GoBoard:
         for enemy in adjacent_enemy:
             new_enemy = enemy.remove_liberty(point)
             if new_enemy.liberties:
-                self._replace_string(new_enemy)
+                self._update_string(new_enemy)
             else:
                 self._remove_string(enemy)
 
-    def _replace_string(self, new_string: GoString) -> None:
+    def _update_string(self, new_string: GoString) -> None:
         for point in new_string.stones:
             self._grid[point] = new_string
 
@@ -57,7 +57,7 @@ class GoBoard:
                 if neighbor_string is None:
                     continue
                 if neighbor_string is not string:
-                    self._replace_string(neighbor_string.add_liberty(point))
+                    self._update_string(neighbor_string.add_liberty(point))
             self._grid[point] = None
 
             self._hash ^= HASH_CODE[point, string.player]  # <3>
