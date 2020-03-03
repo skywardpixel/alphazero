@@ -110,6 +110,7 @@ class GoGameState(GameState):
 class GoGame(Game):
     def __init__(self, size: int = 9):
         super().__init__()
+        self.size = size
         self.state = GoGameState.get_initial_state(size)
 
     def play(self, move: GoMove):
@@ -129,3 +130,23 @@ class GoGame(Game):
     @property
     def winner(self) -> GoPlayer:
         return self.state.winner()
+
+    @property
+    def action_space_size(self) -> int:
+        return self.size * self.size + 2
+
+    def move_to_index(self, move: GoMove) -> int:
+        if move.is_pass:
+            return 0
+        if move.is_resign:
+            return self.size
+        return move.x * self.size + move.y + 1
+
+    def index_to_move(self, index: int) -> GoMove:
+        if index == 0:
+            return GoMove.pass_turn()
+        if index == self.size:
+            return GoMove.resign()
+        x = index // self.size
+        y = index % self.size
+        return GoMove.play(x, y)

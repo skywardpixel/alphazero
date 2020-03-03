@@ -64,6 +64,7 @@ class GomokuGameState(GameState):
 class GomokuGame(Game):
     def __init__(self, size: int = 15, n: int = 5):
         super().__init__()
+        self.size = size
         self.state = GomokuGameState.get_initial_state(size, n)
 
     def play(self, move: GomokuMove):
@@ -83,3 +84,15 @@ class GomokuGame(Game):
     @property
     def winner(self) -> GomokuPlayer:
         return self.state.winner()
+
+    @property
+    def action_space_size(self) -> int:
+        return self.size * self.size
+
+    def move_to_index(self, move: GomokuMove) -> int:
+        return move.x * self.size + move.y
+
+    def index_to_move(self, index: int) -> GomokuMove:
+        x = index // self.size
+        y = index % self.size
+        return GomokuMove(x, y)

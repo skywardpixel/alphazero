@@ -64,6 +64,7 @@ class TicTacToeGameState(GameState):
 class TicTacToeGame(Game):
     def __init__(self, size: int = 3):
         super().__init__()
+        self.size = size
         self.state = TicTacToeGameState.get_initial_state(size)
 
     def play(self, move: TicTacToeMove):
@@ -83,3 +84,15 @@ class TicTacToeGame(Game):
     @property
     def winner(self) -> TicTacToePlayer:
         return self.state.winner()
+
+    @property
+    def action_space_size(self) -> int:
+        return self.size * self.size
+
+    def move_to_index(self, move: TicTacToeMove) -> int:
+        return move.x * self.size + move.y
+
+    def index_to_move(self, index: int) -> TicTacToeMove:
+        x = index // self.size
+        y = index % self.size
+        return TicTacToeMove(x, y)

@@ -30,6 +30,28 @@ class Game:
     def winner(self) -> Player:
         raise NotImplementedError
 
+    @property
+    def action_space_size(self) -> int:
+        raise NotImplementedError
+
+    def move_to_index(self, move: Move) -> int:
+        """
+        Return the index of the move.
+        `0` is reserved for pass, `size` is reserved for resign.
+        :param move: move to return index of
+        :return: the index of the move
+        """
+        raise NotImplementedError
+
+    def index_to_move(self, index: int) -> Move:
+        """
+        Return the move corresponding to the index.
+        Inverse of move_to_index.
+        :param index: the index of the move
+        :return: the move corresponding to the index
+        """
+        raise NotImplementedError
+
 
 class GameState:
     def next(self, move: Move) -> 'GameState':
