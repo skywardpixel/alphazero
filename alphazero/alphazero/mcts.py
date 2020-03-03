@@ -82,7 +82,6 @@ class MCTS:
         legal = self._moves_to_vector(s.get_legal_moves())
         self.Ps[s] *= legal
 
-
         max_u, best_a = float('-inf'), None
         for a in s.get_legal_moves():
             u = self.Qsa[(s, a)] + \
