@@ -65,8 +65,8 @@ class GoGameState(GameState):
             return False
         next_board = self.board.copy()
         next_board.place_stone(player, move.point)
-        next_situation = (player.other, next_board.zobrist_hash())
-        return next_situation in self.previous_states
+        next_state = (player.opponent, next_board.zobrist_hash())
+        return next_state in self.previous_states
 
     def winner(self) -> Optional[GoPlayer]:
         if not self.is_terminal():
