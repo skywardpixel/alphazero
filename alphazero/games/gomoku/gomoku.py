@@ -1,17 +1,23 @@
 from typing import Optional, List
 
-from alphazero.games.base import Player, GameState, Game
+from alphazero.games.game import Game
+from alphazero.games.game_state import GameState
+from alphazero.games.player import Player
 from .board import GomokuBoard
 from .exception import IllegalGomokuMoveException
 from .move import GomokuMove
 from .player import GomokuPlayer
 
 
-class GomokuGameState(GameState):
+class GomokuGameState(GameState[GomokuMove, GomokuPlayer]):
     def __init__(self, board: GomokuBoard, player: GomokuPlayer) -> None:
         super().__init__()
         self.board = board
-        self.player = player
+        self._player = player
+
+    @property
+    def player(self) -> GomokuPlayer:
+        return self._player
 
     @classmethod
     def get_initial_state(cls, size: int = 15, n: int = 5):
@@ -61,14 +67,18 @@ class GomokuGameState(GameState):
         return GomokuGameState(self.board.copy(), self.player.opponent)
 
 
-class GomokuGame(Game):
+class GomokuGame(Game[GomokuGameState, GomokuMove, GomokuPlayer]):
     def __init__(self, size: int = 15, n: int = 5):
         super().__init__()
         self.size = size
-        self.state = GomokuGameState.get_initial_state(size, n)
+        self._state = GomokuGameState.get_initial_state(size, n)
+
+    @property
+    def state(self) -> GomokuGameState:
+        return self._state
 
     def play(self, move: GomokuMove):
-        self.state = self.state.next(move)
+        self._state = self.state.next(move)
 
     def show_board(self) -> None:
         print(self.state.board)

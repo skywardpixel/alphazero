@@ -1,7 +1,7 @@
 import random
 
-from alphazero.games.go.point import GoPoint
 from alphazero.games.go.player import GoPlayer
+from alphazero.games.go.point import GoPoint
 
 SIZE = 9
 

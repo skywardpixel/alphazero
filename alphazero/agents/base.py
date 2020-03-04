@@ -1,4 +1,5 @@
-from alphazero.games.base import GameState, Move
+from alphazero.games.game_state import GameState
+from alphazero.games.move import Move
 
 
 class Agent:

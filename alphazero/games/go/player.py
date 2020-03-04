@@ -1,6 +1,6 @@
 import enum
 
-from alphazero.games.base import Player
+from alphazero.games.player import Player
 
 
 class GoPlayer(Player, enum.Enum):

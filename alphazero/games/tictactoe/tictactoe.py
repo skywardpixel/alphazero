@@ -1,17 +1,21 @@
 from typing import Optional, List
 
-from alphazero.games.base import Player, GameState, Game
+from alphazero.games import GameState, Game, Player
 from .board import TicTacToeBoard
 from .exception import IllegalTicTacToeMoveException
 from .move import TicTacToeMove
 from .player import TicTacToePlayer
 
 
-class TicTacToeGameState(GameState):
+class TicTacToeGameState(GameState[TicTacToeMove, TicTacToePlayer]):
     def __init__(self, board: TicTacToeBoard, player: TicTacToePlayer) -> None:
         super().__init__()
         self.board = board
-        self.player = player
+        self._player = player
+
+    @property
+    def player(self) -> TicTacToePlayer:
+        return self._player
 
     @classmethod
     def get_initial_state(cls, size: int = 3) -> 'TicTacToeGameState':
@@ -61,14 +65,18 @@ class TicTacToeGameState(GameState):
         return TicTacToeGameState(self.board.copy(), self.player.opponent)
 
 
-class TicTacToeGame(Game):
+class TicTacToeGame(Game[TicTacToeGameState, TicTacToeMove, TicTacToePlayer]):
     def __init__(self, size: int = 3):
         super().__init__()
         self.size = size
-        self.state = TicTacToeGameState.get_initial_state(size)
+        self._state = TicTacToeGameState.get_initial_state(size)
+
+    @property
+    def state(self) -> TicTacToeGameState:
+        return self._state
 
     def play(self, move: TicTacToeMove):
-        self.state = self.state.next(move)
+        self._state = self.state.next(move)
 
     def show_board(self) -> None:
         print(self.state.board)
@@ -79,7 +87,7 @@ class TicTacToeGame(Game):
 
     @property
     def current_player(self) -> TicTacToePlayer:
-        return self.state.player
+        return self._state.player
 
     @property
     def winner(self) -> TicTacToePlayer:

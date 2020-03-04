@@ -2,9 +2,9 @@ import os
 
 from alphazero.agents.alphabeta import AlphaBetaAgent
 from alphazero.games.tictactoe.eval_functions import better_eval_func
-from alphazero.games.tictactoe.tictactoe import TicTacToeGame
 from alphazero.games.tictactoe.move import TicTacToeMove
 from alphazero.games.tictactoe.player import TicTacToePlayer
+from alphazero.games.tictactoe.tictactoe import TicTacToeGame
 
 
 def clear():
@@ -21,7 +21,6 @@ def read_move(player: TicTacToePlayer) -> TicTacToeMove:
 
 
 game = TicTacToeGame()
-# TODO: fix typing for eval_fn
 agent = AlphaBetaAgent(TicTacToePlayer.O, depth=6, eval_fn=better_eval_func)
 
 while not game.is_over:

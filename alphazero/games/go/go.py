@@ -1,6 +1,8 @@
 from typing import Optional, List
 
-from alphazero.games.base import Player, GameState, Game
+from alphazero.games.game import Game
+from alphazero.games.game_state import GameState
+from alphazero.games.player import Player
 from .board import GoBoard
 from .exception import IllegalGoMoveException
 from .move import GoMove
@@ -8,7 +10,7 @@ from .player import GoPlayer
 from .scoring import compute_game_result
 
 
-class GoGameState(GameState):
+class GoGameState(GameState[GoMove, GoPlayer]):
     def __init__(self,
                  board: GoBoard,
                  player: GoPlayer,
@@ -16,7 +18,7 @@ class GoGameState(GameState):
                  last_move: Optional[GoMove]) -> None:
         super().__init__()
         self.board = board
-        self.player = player
+        self._player = player
         self.previous_state = previous_state
         if self.previous_state is None:
             self.previous_states = frozenset()
@@ -26,6 +28,10 @@ class GoGameState(GameState):
                 {(previous_state.player, previous_state.board.zobrist_hash())}
             )
         self.last_move = last_move
+
+    @property
+    def player(self) -> GoPlayer:
+        return self._player
 
     @classmethod
     def get_initial_state(cls, size: int = 9) -> 'GoGameState':
@@ -105,14 +111,18 @@ class GoGameState(GameState):
                            self.last_move)
 
 
-class GoGame(Game):
+class GoGame(Game[GoGameState, GoMove, GoPlayer]):
     def __init__(self, size: int = 9):
         super().__init__()
         self.size = size
-        self.state = GoGameState.get_initial_state(size)
+        self._state = GoGameState.get_initial_state(size)
+
+    @property
+    def state(self) -> GoGameState:
+        return self._state
 
     def play(self, move: GoMove):
-        self.state = self.state.next(move)
+        self._state = self.state.next(move)
 
     def show_board(self) -> None:
         print(self.state.board)

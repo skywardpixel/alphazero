@@ -1,6 +1,6 @@
 from typing import Optional
 
-from alphazero.games.base import Move
+from alphazero.games.move import Move
 from .point import GoPoint
 
 

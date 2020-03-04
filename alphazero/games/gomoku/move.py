@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from alphazero.games.base import Move
+from alphazero.games.move import Move
 
 
 @dataclass(eq=True, frozen=True)
