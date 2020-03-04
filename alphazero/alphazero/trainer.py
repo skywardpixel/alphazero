@@ -9,7 +9,7 @@ from alphazero.alphazero.mcts import MonteCarloTreeSearch
 from alphazero.alphazero.types import TrainExample
 from alphazero.games import Game, Player
 from .neural_net import NeuralNetTrainer
-from .state_encoders.state_encoder import GameStateEncoder
+from .state_encoders import GameStateEncoder
 
 logger = logging.getLogger(__name__)
 

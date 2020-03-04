@@ -10,7 +10,9 @@ from alphazero.alphazero.state_encoders.go_state_encoder import GoStateEncoder
 from alphazero.alphazero.trainer import AlphaZeroTrainer
 from alphazero.games.go import GoGame
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+FORMAT = '%(asctime)s - %(name)-15s - %(levelname)s - %(message)s'
+logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+                    format=FORMAT, datefmt='%m/%d/%Y %I:%M:%S %p')
 
 if __name__ == '__main__':
     game = GoGame(9)
