@@ -1,9 +1,10 @@
-from typing import NewType, Tuple, Optional, List
+from typing import Tuple, Optional, List
 
-import torch
+from alphazero.games import GameState
 
-State = NewType('State', int)
-Policy = NewType('Policy', torch.Tensor)
-Value = NewType('Value', float)
+# TODO: use a more compact rep for State
+State = GameState
+Policy = List[float]
+Value = float
 
-TrainExample = NewType('TrainExample', Tuple[State, List[float], Optional[Value]])
+TrainExample = Tuple[State, Policy, Optional[Value]]

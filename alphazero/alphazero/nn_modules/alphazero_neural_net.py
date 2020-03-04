@@ -3,12 +3,12 @@ from typing import Tuple
 import torch
 from torch import nn
 
-from alphazero.alphazero.nn.loss_function import AlphaZeroLoss
+from .loss_function import AlphaZeroLoss
 
 
-class AlphaZeroNN(nn.Module):
+class AlphaZeroNeuralNet(nn.Module):
     """
-    A neural network wrapper class for AlphaZero algorithms.
+    A neural network for AlphaZero algorithms.
     Takes a GameState as input, and outputs a state value and
     a estimated policy for state s. The loss function is defined
     in `loss_function.py`.
@@ -30,7 +30,7 @@ class AlphaZeroNN(nn.Module):
         self._policy_head = policy_head
         self._value_head = value_head
 
-    def forward(self, state: torch.Tensor) -> Tuple[torch.Tensor, float]:
+    def forward(self, state: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         # pylint: disable=arguments-differ
         encoded = self._encoder(state)
         policy = self._policy_head(encoded)

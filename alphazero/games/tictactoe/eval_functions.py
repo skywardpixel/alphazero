@@ -1,6 +1,6 @@
 from .board import TicTacToeBoard
+from .game_state import TicTacToeGameState
 from .player import TicTacToePlayer
-from .tictactoe import TicTacToeGameState
 
 
 def simple_eval_func(state: TicTacToeGameState, player: TicTacToePlayer) -> float:

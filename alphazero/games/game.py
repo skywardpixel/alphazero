@@ -37,6 +37,9 @@ class Game(Generic[S, M, P]):
     def action_space_size(self) -> int:
         raise NotImplementedError
 
+    def reset(self) -> None:
+        raise NotImplementedError
+
     def move_to_index(self, move: M) -> int:
         """
         Return the index of the move.

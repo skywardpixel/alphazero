@@ -1,4 +1,4 @@
-from .gomoku import GomokuGameState
+from .game_state import GomokuGameState
 from .player import GomokuPlayer
 
 

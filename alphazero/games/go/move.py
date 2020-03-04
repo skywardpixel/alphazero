@@ -44,3 +44,20 @@ class GoMove(Move):
     @classmethod
     def resign(cls) -> 'GoMove':
         return GoMove(is_resign=True)
+
+    def __repr__(self):
+        if self.is_pass:
+            return 'GoMove.pass_turn'
+        elif self.is_resign:
+            return 'GoMove.resign'
+        return f'GoMove({self.x}, {self.y})'
+
+    @classmethod
+    def from_string(cls, string: str) -> 'GoMove':
+        string = string.lower().strip()
+        if string == 'resign':
+            return GoMove.resign()
+        elif string == 'pass':
+            return GoMove.pass_turn()
+        x, y = string.split()
+        return GoMove.play(int(x), int(y))
