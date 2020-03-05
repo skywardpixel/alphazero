@@ -1,0 +1,12 @@
+game_size: 9
+num_history: 3
+encoding_dim: 128
+num_simulations: 2
+c_puct: 1.
+num_iters: 2
+num_episodes: 2
+batch_size: 16
+nn_update_threshold: 0.55
+log_dir: ./tmp/
+lr: 0.01
+momentum: 0.8

@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any
 
 import numpy as np
 import torch
@@ -23,13 +23,11 @@ class MonteCarloTreeSearch:
                  game: Game,
                  state_encoder: GameStateEncoder,
                  nn: AlphaZeroNeuralNet,
-                 num_simulations: int,
-                 c_puct: float) -> None:
+                 config: Dict[str, Any]) -> None:
         self.game = game
         self.state_encoder = state_encoder
         self.nn = nn
-        self.num_simulations = num_simulations
-        self.c_puct = c_puct
+        self.config = config
         self.visited_states = set()
         # TODO: Switch to compact rep for states, e.g. Zobrist hashing
         # TODO: Implement canonical boards for all three games?
@@ -51,7 +49,7 @@ class MonteCarloTreeSearch:
         :param temperature: temperature for output policy vector
         :return: a probability distribution on the action space of the game
         """
-        for _ in range(self.num_simulations):
+        for _ in range(self.config['num_simulations']):
             self.search(state)
         s = state
         counts = [self.Nsa[(s, a)] for a in range(self.game.action_space_size)]
@@ -96,7 +94,7 @@ class MonteCarloTreeSearch:
         for a in s.get_legal_moves():
             a_idx = self.game.move_to_index(a)
             u = self.Qsa[(s, a_idx)] + \
-                self.c_puct * self.Ps[s][a_idx] \
+                self.config['c_puct'] * self.Ps[s][a_idx] \
                 * np.sqrt(self.Ns[s]) / (1 + self.Nsa[(s, a_idx)])
             if u > max_u:
                 max_u, best_a = u, a
@@ -115,7 +113,7 @@ class MonteCarloTreeSearch:
     def _moves_to_vector(self, moves: List[Move]) -> torch.Tensor:
         """
         Converts a list of moves to a binary vector,
-        where True denotes a move as valid and 0 as not.
+        where 1 denotes a move as valid and 0 as not.
         :param moves: the list of moves
         :return: binary vector of legal moves
         """

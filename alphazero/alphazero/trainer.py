@@ -1,6 +1,6 @@
 import copy
 import logging
-from typing import List
+from typing import List, Any, Dict
 
 import numpy as np
 from torch import nn
@@ -19,27 +19,18 @@ class AlphaZeroTrainer:
                  game: Game,
                  state_encoder: GameStateEncoder,
                  mcts: MonteCarloTreeSearch,
-                 num_iter: int,
-                 num_episode: int,
-                 num_simulations: int,
-                 c_puct: float,
-                 nn_update_threshold: int = .55):
+                 config: Dict[str, Any]):
         self.game = game
         self.state_encoder = state_encoder
         self.mcts = mcts
-        self.num_iter = num_iter
-        self.num_episode = num_episode
-        self.num_sim = num_simulations
-        self.c_puct = c_puct
-        self.nn_update_threshold = nn_update_threshold
-        self.nn_trainer = NeuralNetTrainer()
+        self.config = config
 
     def train(self):
         examples = []
-        for i in range(self.num_iter):
+        for i in range(self.config['num_iters']):
             logger.info('Iteration %d', i)
             examples_iter: List[TrainExample] = []
-            for ep in range(self.num_episode):
+            for ep in range(self.config['num_episodes']):
                 logger.info('Episode %d', ep)
                 self.mcts.reset()
                 examples_ep = self.run_episode()
@@ -50,7 +41,8 @@ class AlphaZeroTrainer:
         np.random.shuffle(examples_for_training)
 
         nn_old = copy.deepcopy(self.mcts.nn)
-        self.nn_trainer.train(self.mcts.nn, examples_for_training)
+        nn_trainer = NeuralNetTrainer(self.mcts.nn, self.config)
+        nn_trainer.train(examples_for_training)
         nn_new = self.mcts.nn
 
         if not self._update_nn(nn_old, nn_new):

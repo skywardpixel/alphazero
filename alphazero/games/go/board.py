@@ -16,7 +16,7 @@ class GoBoard:
 
     def place_stone(self, player: GoPlayer, point: GoPoint) -> None:
         if not self.is_empty_point(point):
-            raise IllegalGoMoveException
+            raise IllegalGoMoveException(f'Move {point!s} is not valid on board\n{self!s}')
         adjacent_friendly = set()
         adjacent_enemy = set()
         liberties = set()
