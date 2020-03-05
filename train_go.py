@@ -1,6 +1,7 @@
 import logging
 import sys
 
+import torch
 import yaml
 
 from alphazero.alphazero.mcts import MonteCarloTreeSearch
@@ -19,15 +20,17 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO,
 with open('go.yaml', 'r') as f:
     config = yaml.safe_load(f)
 
+config['device'] = 'cuda' if torch.cuda.is_available() else 'cpu'
+
 if __name__ == '__main__':
     game = GoGame(config['game_size'])
-    state_encoder = GoStateEncoder(num_history=3)
+    state_encoder = GoStateEncoder(config)
 
     encoder = LinearEncoder(config)
     value_head = LinearValueHead(config)
     policy_head = LinearPolicyHead(game.action_space_size, config)
 
-    net = AlphaZeroNeuralNet(encoder, policy_head, value_head)
+    net = AlphaZeroNeuralNet(encoder, policy_head, value_head, config)
     mcts = MonteCarloTreeSearch(game=game,
                                 state_encoder=state_encoder,
                                 nn=net,

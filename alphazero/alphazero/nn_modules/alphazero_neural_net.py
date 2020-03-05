@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Any, Dict
 
 import torch
 from torch import nn
@@ -17,7 +17,8 @@ class AlphaZeroNeuralNet(nn.Module):
     def __init__(self,
                  encoder: nn.Module,
                  policy_head: nn.Module,
-                 value_head: nn.Module) -> None:
+                 value_head: nn.Module,
+                 config: Dict[str, Any]) -> None:
         """
         Constructs an AlphaZeroNN instance.
         :param encoder: module to encode a state into an IR
@@ -26,9 +27,9 @@ class AlphaZeroNeuralNet(nn.Module):
         """
         super().__init__()
         self._loss_fn = AlphaZeroLoss()
-        self._encoder = encoder
-        self._policy_head = policy_head
-        self._value_head = value_head
+        self._encoder = encoder.to(device=config['device'])
+        self._policy_head = policy_head.to(device=config['device'])
+        self._value_head = value_head.to(device=config['device'])
 
     def forward(self, state: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         # pylint: disable=arguments-differ

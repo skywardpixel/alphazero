@@ -1,5 +1,3 @@
-from typing import Dict
-
 import torch
 from torch.nn.modules.loss import _Loss
 
@@ -8,9 +6,15 @@ class AlphaZeroLoss(_Loss):
     """
     Computes the loss for the AlphaZero neural network.
     """
-    def forward(self, inputs: Dict[str, torch.Tensor]) -> torch.Tensor:
-        # pylint: disable=arguments-differ
-        vs, zs, pis, ps = inputs['vs'], inputs['zs'], inputs['pis'], inputs['ps']
-        v_loss = (vs - zs) ** 2
-        pi_loss = -torch.dot(pis, torch.log(ps))
-        return v_loss + pi_loss
+
+    def forward(self, input, target):
+        # pylint: disable=arguments-differ, redefined-builtin
+        (p, v), (pi, z) = input, target
+        v = v.flatten()
+        v_loss = (v - z) ** 2
+        batch_size, action_space_size = pi.shape
+        pi_loss = -torch.bmm(pi.view(batch_size, 1, action_space_size),
+                             torch.log(p).view(batch_size, action_space_size, 1))
+        pi_loss = pi_loss.flatten()
+        # pi_loss = -torch.dot(pi, torch.log(p))
+        return torch.mean(v_loss + pi_loss)

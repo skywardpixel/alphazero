@@ -14,4 +14,4 @@ class LinearPolicyHead(nn.Module):
         # pylint: disable=arguments-differ
         x = self.fc_out(x)
         x = F.softmax(x, dim=-1)
-        return x
+        return x.flatten()

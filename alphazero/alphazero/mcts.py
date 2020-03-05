@@ -120,7 +120,7 @@ class MonteCarloTreeSearch:
         move_vector = torch.zeros(self.game.action_space_size)
         for m in moves:
             move_vector[self.game.move_to_index(m)] = 1
-        return move_vector
+        return move_vector.to(self.config['device'])
 
     def reset(self):
         # TODO: clear all states

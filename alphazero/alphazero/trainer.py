@@ -9,7 +9,7 @@ from alphazero.alphazero.mcts import MonteCarloTreeSearch
 from alphazero.alphazero.types import TrainExample
 from alphazero.games import Game, Player
 from .neural_net import NeuralNetTrainer
-from .state_encoders import GameStateEncoder
+from .state_encoders import GameStateEncoder, torch
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,9 @@ class AlphaZeroTrainer:
                 return 0.
             return +1. if player == winner else -1.
 
-        examples = [(s, pi, z(s.player, self.game.winner))
+        # must transform to tensors for nn training
+        # pylint: disable=not-callable
+        examples = [(self.state_encoder.encode(s), torch.tensor(pi), z(s.player, self.game.winner))
                     for s, pi, _ in examples]
         return examples
 
