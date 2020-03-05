@@ -4,29 +4,23 @@ from .player import TicTacToePlayer
 
 
 def simple_eval_func(state: TicTacToeGameState, player: TicTacToePlayer) -> float:
-    if state.current_player != player:
-        state = state.reverse_player()
+    state = state.canonical()
     if state.is_win():
-        return 99999.
+        score = 99999.
     elif state.is_lose():
-        return -99999.
+        score = -99999.
     else:
-        return 0.
+        score = 0.
+    # above are scores for X
+    if player == TicTacToePlayer.O:
+        return -score
+    return score
 
 
 def better_eval_func(state: TicTacToeGameState, player: TicTacToePlayer) -> float:
-    if state.is_tie():
-        return 0.
-    if state.current_player == player:
-        if state.is_win():
-            return 99999.
-        elif state.is_lose():
-            return -99999.
-    else:
-        if state.is_win():
-            return -99999.
-        elif state.is_lose():
-            return 99999.
+    state = state.canonical()
+    if state.is_terminal():
+        return simple_eval_func(state, player)
 
     def count_good_rows(board: TicTacToeBoard, count_player: TicTacToePlayer):
         num_good_rows = 0

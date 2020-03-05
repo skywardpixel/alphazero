@@ -9,15 +9,15 @@ from .player import TicTacToePlayer
 class TicTacToeBoard:
     def __init__(self, size: int = 3) -> None:
         self.size = size
-        self._grid: Dict[TicTacToeMove, TicTacToePlayer] = dict()
+        self.grid: Dict[TicTacToeMove, TicTacToePlayer] = dict()
 
     def apply_move(self, player: TicTacToePlayer, move: TicTacToeMove) -> None:
         if not self.is_legal_move(move):
             raise IllegalTicTacToeMoveException
-        self._grid[move] = player
+        self.grid[move] = player
 
     def get(self, r: int, c: int) -> Optional[TicTacToePlayer]:
-        return self._grid.get(TicTacToeMove(r, c))
+        return self.grid.get(TicTacToeMove(r, c))
 
     def get_legal_moves(self) -> List[TicTacToeMove]:
         return [TicTacToeMove(r, c)
@@ -27,7 +27,7 @@ class TicTacToeBoard:
     def is_legal_move(self, move: TicTacToeMove) -> bool:
         return 0 <= move.x < self.size \
                and 0 <= move.y < self.size \
-               and self._grid.get(move) is None
+               and self.grid.get(move) is None
 
     def _has_full_row(self, player: TicTacToePlayer) -> bool:
         return any(all(self.get(r, c) == player for c in range(self.size))

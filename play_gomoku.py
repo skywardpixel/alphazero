@@ -22,6 +22,7 @@ game = GomokuGame(7, 5)
 agent = AlphaBetaAgent(GomokuPlayer.WHITE, depth=2, eval_fn=simple_eval_func)
 
 while not game.is_over:
+    clear()
     game.show_board()
     # print(f"current state score by eval func: {agent.eval_fn(game.state, agent.player)}")
     if game.current_player == GomokuPlayer.BLACK:

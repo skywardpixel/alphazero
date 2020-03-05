@@ -11,7 +11,7 @@ from .zobrist_hashing import EMPTY_BOARD, HASH_CODE
 class GoBoard:
     def __init__(self, size: int = 15) -> None:
         self.size = size
-        self._grid: Dict[GoPoint, GoString] = dict()
+        self.grid: Dict[GoPoint, GoString] = dict()
         self._hash = EMPTY_BOARD
 
     def place_stone(self, player: GoPlayer, point: GoPoint) -> None:
@@ -22,7 +22,7 @@ class GoBoard:
         liberties = set()
         for neighbor in point.neighbors():
             if self.is_within_bounds(neighbor):
-                neighbor_string = self._grid.get(neighbor)
+                neighbor_string = self.grid.get(neighbor)
                 if neighbor_string is None:
                     liberties.add(neighbor)
                 elif neighbor_string.player == player:
@@ -34,7 +34,7 @@ class GoBoard:
         for friendly in adjacent_friendly:
             new_string = new_string.merge(friendly)
         for p in new_string.stones:
-            self._grid[p] = new_string
+            self.grid[p] = new_string
 
         # apply hash code
         self._hash ^= HASH_CODE[point, player]
@@ -48,22 +48,22 @@ class GoBoard:
 
     def _update_string(self, new_string: GoString) -> None:
         for point in new_string.stones:
-            self._grid[point] = new_string
+            self.grid[point] = new_string
 
     def _remove_string(self, string: GoString) -> None:
         for point in string.stones:
             for neighbor in point.neighbors():
-                neighbor_string = self._grid.get(neighbor)
+                neighbor_string = self.grid.get(neighbor)
                 if neighbor_string is None:
                     continue
                 if neighbor_string is not string:
                     self._update_string(neighbor_string.add_liberty(point))
-            self._grid[point] = None
+            self.grid[point] = None
 
             self._hash ^= HASH_CODE[point, string.player]  # <3>
 
     def get_string(self, r: int, c: int) -> Optional[GoString]:
-        return self._grid.get(GoPoint(r, c))
+        return self.grid.get(GoPoint(r, c))
 
     def get(self, r: int, c: int) -> Optional[GoPlayer]:
         string = self.get_string(r, c)
@@ -75,7 +75,7 @@ class GoBoard:
                 if self.get(r, c) is None]
 
     def is_empty_point(self, point: GoPoint) -> bool:
-        return self.is_within_bounds(point) and self._grid.get(point) is None
+        return self.is_within_bounds(point) and self.grid.get(point) is None
 
     def is_move_self_capture(self, player: GoPlayer, point: GoPoint):
         next_board = self.copy()

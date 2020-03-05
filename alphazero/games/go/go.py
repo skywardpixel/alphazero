@@ -49,7 +49,7 @@ class GoGame(Game[GoGameState, GoMove, GoPlayer]):
     def index_to_move(self, index: int) -> GoMove:
         if index == 0:
             return GoMove.pass_turn()
-        if index == self.size:
+        if index == self.size * self.size + 1:
             return GoMove.resign()
         index -= 1
         x = index // self.size

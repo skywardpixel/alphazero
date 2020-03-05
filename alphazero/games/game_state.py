@@ -1,4 +1,4 @@
-from typing import Generic, List, Optional, TypeVar
+from typing import Generic, List, Optional, TypeVar, Tuple
 
 from .move import Move
 from .player import Player
@@ -8,6 +8,8 @@ P = TypeVar('P', bound=Player)
 
 
 class GameState(Generic[M, P]):
+    canonical_player: Player
+
     def next(self, move: Move) -> 'GameState':
         raise NotImplementedError
 
@@ -33,5 +35,11 @@ class GameState(Generic[M, P]):
     def is_tie(self) -> bool:
         raise NotImplementedError
 
-    def reverse_player(self) -> 'GameState':
+    def canonical(self) -> 'GameState':
+        raise NotImplementedError
+
+    def compact(self) -> Tuple[P, int]:
+        raise NotImplementedError
+
+    def board_zobrist_hash(self) -> int:
         raise NotImplementedError

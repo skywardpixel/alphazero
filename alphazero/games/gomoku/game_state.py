@@ -8,6 +8,8 @@ from .player import GomokuPlayer
 
 
 class GomokuGameState(GameState[GomokuMove, GomokuPlayer]):
+    canonical_player = GomokuPlayer.BLACK
+
     def __init__(self, board: GomokuBoard, player: GomokuPlayer) -> None:
         super().__init__()
         self.board = board
@@ -58,8 +60,10 @@ class GomokuGameState(GameState[GomokuMove, GomokuPlayer]):
     def is_tie(self) -> bool:
         return self.winner() is None and self.board.full()
 
-    def reverse_player(self) -> 'GameState':
-        # reversed_board = self.board.copy()
-        # for p in self.board.grid:
-        #     reversed_board.grid[p] = self.board.grid[p].opponent
-        return GomokuGameState(self.board.copy(), self.player.opponent)
+    def canonical(self) -> 'GomokuGameState':
+        if self.player == GomokuPlayer.BLACK:
+            return self
+        rev_board = self.board.copy()
+        for point, player in self.board.grid.items():
+            rev_board.grid[point] = player.opponent
+        return GomokuGameState(rev_board, self.player.opponent)

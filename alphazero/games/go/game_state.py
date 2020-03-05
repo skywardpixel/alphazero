@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 from alphazero.games import GameState, Player
 from .board import GoBoard
@@ -9,6 +9,8 @@ from .scoring import compute_game_result
 
 
 class GoGameState(GameState[GoMove, GoPlayer]):
+    canonical_player = GoPlayer.BLACK
+
     def __init__(self,
                  board: GoBoard,
                  player: GoPlayer,
@@ -99,11 +101,26 @@ class GoGameState(GameState[GoMove, GoPlayer]):
     def is_tie(self) -> bool:
         return self.winner() is None and self.is_terminal()
 
-    def reverse_player(self) -> 'GameState':
-        # reversed_board = self.board.copy()
-        # for p in self.board.grid:
-        #     reversed_board.grid[p] = self.board.grid[p].opponent
-        return GoGameState(self.board.copy(),
+    def canonical(self) -> 'GoGameState':
+        """
+        Regardless of the current player, returns the equivalent
+        of the current state as if BLACK is playing.
+        This is used for agents.
+        :return:
+        """
+        if self.player == GoPlayer.BLACK:
+            return self
+        rev_board = self.board.copy()
+        for string in set(rev_board.grid.values()):
+            if string is not None:
+                string.player = string.player.opponent
+        return GoGameState(rev_board,
                            self.player.opponent,
                            self.previous_state,
                            self.last_move)
+
+    def compact(self) -> Tuple[GoPlayer, int]:
+        return self.player, self.board.zobrist_hash()
+
+    def board_zobrist_hash(self) -> int:
+        return self.board.zobrist_hash()

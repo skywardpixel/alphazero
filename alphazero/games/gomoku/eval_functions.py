@@ -3,11 +3,14 @@ from .player import GomokuPlayer
 
 
 def simple_eval_func(state: GomokuGameState, player: GomokuPlayer) -> float:
-    if state.current_player != player:
-        state = state.reverse_player()
+    state = state.canonical()
     if state.is_win():
-        return 99999.
+        score = 99999.
     elif state.is_lose():
-        return -99999.
+        score = -99999.
     else:
-        return 0.
+        score = 0.
+    # above are scores for BLACK
+    if player == GomokuPlayer.WHITE:
+        return -score
+    return score

@@ -8,6 +8,8 @@ from .player import TicTacToePlayer
 
 
 class TicTacToeGameState(GameState[TicTacToeMove, TicTacToePlayer]):
+    canonical_player = TicTacToePlayer.X
+
     def __init__(self, board: TicTacToeBoard, player: TicTacToePlayer) -> None:
         super().__init__()
         self.board = board
@@ -58,8 +60,10 @@ class TicTacToeGameState(GameState[TicTacToeMove, TicTacToePlayer]):
     def is_tie(self) -> bool:
         return self.winner() is None and self.board.full()
 
-    def reverse_player(self) -> 'GameState':
-        # reversed_board = self.board.copy()
-        # for p in self.board.grid:
-        #     reversed_board.grid[p] = self.board.grid[p].opponent
-        return TicTacToeGameState(self.board.copy(), self.player.opponent)
+    def canonical(self) -> 'TicTacToeGameState':
+        if self.player == TicTacToePlayer.X:
+            return self
+        rev_board = self.board.copy()
+        for point, player in self.board.grid.items():
+            rev_board.grid[point] = player.opponent
+        return TicTacToeGameState(rev_board, self.player.opponent)

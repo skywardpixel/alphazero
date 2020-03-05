@@ -1,16 +1,20 @@
+import logging
 from collections import defaultdict
 from typing import List, Dict, Tuple, Any
 
 import numpy as np
 import torch
+from tqdm import trange
 
 from alphazero.alphazero.nn_modules import AlphaZeroNeuralNet
 from alphazero.alphazero.state_encoders.state_encoder import GameStateEncoder
+from alphazero.alphazero.types import Value, State, Action
 from alphazero.games.game import Game
 from alphazero.games.game_state import GameState
 from alphazero.games.move import Move
 
 EPS = 1e-8
+logger = logging.getLogger(__name__)
 
 
 class MonteCarloTreeSearch:
@@ -29,18 +33,18 @@ class MonteCarloTreeSearch:
         self.nn = nn
         self.config = config
         self.visited_states = set()
-        # TODO: Switch to compact rep for states, e.g. Zobrist hashing
-        # TODO: Implement canonical boards for all three games?
-        # TODO: Tutorial returns negative values. What to do in our model?
+
         # Q(s, a) Q values for state-action pair
-        self.Qsa: Dict[Tuple[GameState, int], float] = defaultdict(float)
+        self.Qsa: Dict[Tuple[State, Action], Value] = defaultdict(float)
         # N(s, a) visit counts for state-action pair
-        self.Nsa: Dict[Tuple[GameState, int], int] = defaultdict(int)
+        self.Nsa: Dict[Tuple[State, Action], int] = defaultdict(int)
         # N(s) visit counts for state
-        self.Ns: Dict[GameState, int] = defaultdict(int)
+        self.Ns: Dict[State, int] = defaultdict(int)
         # p(s) initial policies for state, returned by NN
-        self.Ps: Dict[GameState, torch.Tensor] \
+        self.Ps: Dict[State, torch.Tensor] \
             = defaultdict(lambda: torch.zeros((self.game.action_space_size,)))
+        # terminal state values
+        self.Ts: Dict[State, Value] = dict()
 
     def get_policy(self, state: GameState, temperature: float = 1) -> List[float]:
         """
@@ -49,10 +53,12 @@ class MonteCarloTreeSearch:
         :param temperature: temperature for output policy vector
         :return: a probability distribution on the action space of the game
         """
-        for _ in range(self.config['num_simulations']):
-            self.search(state)
-        s = state
-        counts = [self.Nsa[(s, a)] for a in range(self.game.action_space_size)]
+        s = state.canonical()
+        s_comp = s.board_zobrist_hash()
+        for _ in trange(self.config['num_simulations'], position=2):
+            self.search(s)
+
+        counts = [self.Nsa[(s_comp, a)] for a in range(self.game.action_space_size)]
 
         # convert count into a probability distribution
         counts = [c ** (1. / temperature) for c in counts]
@@ -65,37 +71,50 @@ class MonteCarloTreeSearch:
         :param s: state to start the MCTS search from
         :return: the estimated value of state `s`
         """
-        s = state
-        # TODO: is s already visited?
+        s = state.canonical()
+        s_comp = s.board_zobrist_hash()
 
-        if s not in self.Ps:
+        if s.is_terminal():
+            winner = s.winner()
+            if winner == s.canonical_player:
+                score = +1.
+            elif winner == s.canonical_player.opponent:
+                score = -1.
+            else:
+                score = 0.
+            self.Ts[s_comp] = score
+
+        if s_comp in self.Ts:
+            return self.Ts[s_comp]
+
+        if s_comp not in self.Ps:
             # new leaf node
             # use nn_modules to predict current policy and value
             encoded_state = self.state_encoder.encode(s)
-            self.Ps[s], v = self.nn(encoded_state)
+            self.Ps[s_comp], v = self.nn(encoded_state)
             # squeeze to remove 0th dim (batch)
-            self.Ps[s] = self.Ps[s].squeeze()
+            self.Ps[s_comp] = self.Ps[s_comp].squeeze()
             v = v.squeeze()
             legal_moves = s.get_legal_moves()
             legal_vector = self._moves_to_vector(legal_moves)
-            self.Ps[s] *= legal_vector
-            sum_Ps = torch.sum(self.Ps[s])
+            self.Ps[s_comp] *= legal_vector
+            sum_Ps = torch.sum(self.Ps[s_comp])
             if sum_Ps > 0:
                 # re-normalize
-                self.Ps[s] /= sum_Ps
+                self.Ps[s_comp] /= sum_Ps
             else:
-                self.Ps[s] += legal_vector
-                sum_Ps = sum(self.Ps[s])
-                self.Ps[s] /= sum_Ps
-            self.Ns[s] = 0
+                self.Ps[s_comp] += legal_vector
+                sum_Ps = sum(self.Ps[s_comp])
+                self.Ps[s_comp] /= sum_Ps
+            self.Ns[s_comp] = 0
             return -v
 
         max_u, best_a = float('-inf'), None
         for a in s.get_legal_moves():
             a_idx = self.game.move_to_index(a)
-            u = self.Qsa[(s, a_idx)] + \
-                self.config['c_puct'] * self.Ps[s][a_idx] \
-                * np.sqrt(self.Ns[s]) / (1 + self.Nsa[(s, a_idx)])
+            u = self.Qsa[(s_comp, a_idx)] + \
+                self.config['c_puct'] * self.Ps[s_comp][a_idx] \
+                * np.sqrt(self.Ns[s_comp]) / (1 + self.Nsa[(s_comp, a_idx)])
             if u > max_u:
                 max_u, best_a = u, a
         a = best_a
@@ -103,10 +122,11 @@ class MonteCarloTreeSearch:
         nv = self.search(ns)
 
         a_idx = self.game.move_to_index(a)
-        self.Qsa[(s, a_idx)] = (self.Qsa[(s, a_idx)] * self.Nsa[(s, a_idx)] + nv) \
-                               / (self.Nsa[(s, a_idx)] + 1)
-        self.Nsa[(s, a_idx)] += 1
-        self.Ns[s] += 1
+        self.Qsa[(s_comp, a_idx)] = \
+            (self.Qsa[(s_comp, a_idx)] * self.Nsa[(s_comp, a_idx)] + nv) \
+            / (self.Nsa[(s_comp, a_idx)] + 1)
+        self.Nsa[(s_comp, a_idx)] += 1
+        self.Ns[s_comp] += 1
 
         return -nv
 
@@ -123,9 +143,10 @@ class MonteCarloTreeSearch:
         return move_vector.to(self.config['device'])
 
     def reset(self):
-        # TODO: clear all states
+        # clear all states
         self.visited_states.clear()
         self.Qsa.clear()
         self.Ps.clear()
         self.Nsa.clear()
         self.Ns.clear()
+        self.Ts.clear()

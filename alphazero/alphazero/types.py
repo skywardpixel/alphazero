@@ -2,10 +2,10 @@ from typing import Tuple, Optional, List, Union
 
 import torch
 
-from alphazero.games import GameState
+from alphazero.games import GameState, Move
 
-# TODO: use a more compact rep for State
-State = Union[GameState, torch.Tensor]
+State = Union[GameState, torch.Tensor, int]
+Action = Union[Move, int]
 Policy = Union[List[float], torch.Tensor]
 Value = float
 

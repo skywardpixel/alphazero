@@ -4,6 +4,7 @@ from typing import List, Any, Dict
 
 import numpy as np
 from torch import nn
+from tqdm import trange
 
 from alphazero.alphazero.mcts import MonteCarloTreeSearch
 from alphazero.alphazero.types import TrainExample
@@ -27,11 +28,10 @@ class AlphaZeroTrainer:
 
     def train(self):
         examples = []
-        for i in range(self.config['num_iters']):
-            logger.info('Iteration %d', i)
+        for i in trange(self.config['num_iters'], position=0):
             examples_iter: List[TrainExample] = []
-            for ep in range(self.config['num_episodes']):
-                logger.info('Episode %d', ep)
+            for ep in trange(self.config['num_episodes'], position=1):
+                # logger.info('Episode %d', ep)
                 self.mcts.reset()
                 examples_ep = self.run_episode()
                 examples_iter.extend(examples_ep)

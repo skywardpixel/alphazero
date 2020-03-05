@@ -10,20 +10,20 @@ class GomokuBoard:
     def __init__(self, size: int = 15, n: int = 5) -> None:
         self.size = size
         self.n = n
-        self._grid: Dict[GomokuMove, GomokuPlayer] = dict()
+        self.grid: Dict[GomokuMove, GomokuPlayer] = dict()
 
     def apply_move(self, player: GomokuPlayer, move: GomokuMove) -> None:
         if not self.is_legal_move(move):
             raise IllegalGomokuMoveException
-        self._grid[move] = player
+        self.grid[move] = player
 
     def get(self, r: int, c: int) -> Optional[GomokuPlayer]:
-        return self._grid.get(GomokuMove(r, c))
+        return self.grid.get(GomokuMove(r, c))
 
     def get_legal_moves(self, within: Optional[int] = None) -> List[GomokuMove]:
         if within is not None:
             moves = set()
-            for p in self._grid:
+            for p in self.grid:
                 for r in range(p.x - within, p.x + within + 1):
                     for c in range(p.y - within, p.y + within + 1):
                         move = GomokuMove(r, c)
@@ -38,7 +38,7 @@ class GomokuBoard:
     def is_legal_move(self, move: GomokuMove) -> bool:
         return 0 <= move.x < self.size \
                and 0 <= move.y < self.size \
-               and self._grid.get(move) is None
+               and self.grid.get(move) is None
 
     def has_won(self, player: GomokuPlayer) -> bool:
         return self._has_win_in_a_row(player) \
