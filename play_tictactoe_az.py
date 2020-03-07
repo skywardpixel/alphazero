@@ -17,7 +17,7 @@ FORMAT = '%(asctime)s - %(name)-15s - %(levelname)s - %(message)s'
 logging.basicConfig(stream=sys.stderr, level=logging.INFO,
                     format=FORMAT, datefmt='%m/%d/%Y %I:%M:%S %p')
 
-with open('ttt.yaml', 'r') as f:
+with open('tictactoe.yaml', 'r') as f:
     config = yaml.safe_load(f)
 
 config['device'] = 'cuda' if torch.cuda.is_available() else 'cpu'
