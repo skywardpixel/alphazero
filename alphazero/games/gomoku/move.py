@@ -10,3 +10,9 @@ class GomokuMove(Move):
 
     def __str__(self):
         return f'({self.x},{self.y})'
+
+    @classmethod
+    def from_string(cls, string: str) -> 'GomokuMove':
+        string = string.lower().strip()
+        x, y = string.split()
+        return GomokuMove(int(x), int(y))

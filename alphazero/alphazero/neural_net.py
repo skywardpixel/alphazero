@@ -60,7 +60,7 @@ class NeuralNetTrainer:
         def log_training_results(trainer):
             evaluator.run(data_loader)
             metrics = evaluator.state.metrics
-            print("Training Results - Epoch: {}  Avg loss: {:.2f}"
-                  .format(trainer.state.epoch, metrics['loss']))
+            logger.info("Training Results - Epoch: {}  Avg loss: {:.2f}"
+                        .format(trainer.state.epoch, metrics['loss']))
 
         trainer.run(data_loader, max_epochs=self.max_epochs)

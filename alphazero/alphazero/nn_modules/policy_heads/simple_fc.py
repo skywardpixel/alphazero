@@ -1,14 +1,16 @@
+from typing import Any, Dict
+
 import torch
 import torch.nn.functional as F
 from torch import nn
 
 
 class SimpleFullyConnectedPolicyHead(nn.Module):
-    def __init__(self, input_dim: int, output_dim: int) -> None:
+    def __init__(self, action_space_size: int, config: Dict[str, Any]) -> None:
         super().__init__()
-        self.fc1 = nn.Linear(input_dim, 256)
+        self.fc1 = nn.Linear(config['encoding_dim'], 256)
         self.fc2 = nn.Linear(256, 128)
-        self.fc_out = nn.Linear(128, output_dim)
+        self.fc_out = nn.Linear(128, action_space_size)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # pylint: disable=arguments-differ

@@ -37,12 +37,9 @@ if __name__ == '__main__':
     # value_head = LinearValueHead(config)
     # policy_head = LinearPolicyHead(game.action_space_size, config)
 
-    encoder = SimpleConvNetEncoder(config['game_size'],
-                                   config['num_history'],
-                                   config['encoding_dim'])
+    encoder = SimpleConvNetEncoder(config)
     value_head = SimpleFullyConnectedValueHead(config['encoding_dim'])
-    policy_head = SimpleFullyConnectedPolicyHead(config['encoding_dim'],
-                                                 game.action_space_size)
+    policy_head = SimpleFullyConnectedPolicyHead(game.action_space_size, config)
 
     net = AlphaZeroNeuralNet(encoder, policy_head, value_head, config)
     mcts = MonteCarloTreeSearch(game=game,

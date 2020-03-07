@@ -4,9 +4,9 @@ from torch import nn
 
 
 class SimpleFullyConnectedValueHead(nn.Module):
-    def __init__(self, input_dim):
+    def __init__(self, config):
         super().__init__()
-        self.fc1 = nn.Linear(input_dim, 32)
+        self.fc1 = nn.Linear(config['encoding_dim'], 32)
         self.fc2 = nn.Linear(32, 16)
         self.fc_out = nn.Linear(16, 1)
 
