@@ -4,17 +4,20 @@ from typing import Dict, Optional, List
 from .exception import IllegalTicTacToeMoveException
 from .move import TicTacToeMove
 from .player import TicTacToePlayer
+from .zobrist_hash import EMPTY_BOARD, HASH_CODE
 
 
 class TicTacToeBoard:
     def __init__(self, size: int = 3) -> None:
         self.size = size
         self.grid: Dict[TicTacToeMove, TicTacToePlayer] = dict()
+        self._hash = EMPTY_BOARD
 
     def apply_move(self, player: TicTacToePlayer, move: TicTacToeMove) -> None:
         if not self.is_legal_move(move):
             raise IllegalTicTacToeMoveException
         self.grid[move] = player
+        self._hash ^= HASH_CODE[(move, player)]
 
     def get(self, r: int, c: int) -> Optional[TicTacToePlayer]:
         return self.grid.get(TicTacToeMove(r, c))
@@ -67,3 +70,6 @@ class TicTacToeBoard:
 
     def copy(self) -> 'TicTacToeBoard':
         return copy.deepcopy(self)
+
+    def zobrist_hash(self) -> int:
+        return self._hash

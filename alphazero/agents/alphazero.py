@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 import numpy as np
 import torch
 
@@ -9,22 +11,40 @@ from alphazero.games.move import Move
 from .base import Agent
 
 
-class AlphaZeroAgent(Agent):
+class AlphaZeroArgMaxAgent(Agent):
     def __init__(self,
                  game: Game,
                  state_encoder: GameStateEncoder,
                  nn: torch.nn.Module,
-                 num_simulations: int,
-                 c_puct: float):
+                 config: Dict[str, Any]):
         super().__init__()
         self.game = game
         self.state_encoder = state_encoder
         self.mcts = MonteCarloTreeSearch(game=game,
                                          state_encoder=state_encoder,
                                          nn=nn,
-                                         num_simulations=num_simulations,
-                                         c_puct=c_puct)
+                                         config=config)
 
     def select_move(self, state: GameState) -> Move:
         policy = self.mcts.get_policy(state)
-        return np.random.choice(self.game.action_space_size, p=policy)
+        return self.game.index_to_move(np.argmax(policy).item())
+
+
+class AlphaZeroSampleAgent(Agent):
+    def __init__(self,
+                 game: Game,
+                 state_encoder: GameStateEncoder,
+                 nn: torch.nn.Module,
+                 config: Dict[str, Any]):
+        super().__init__()
+        self.game = game
+        self.state_encoder = state_encoder
+        self.mcts = MonteCarloTreeSearch(game=game,
+                                         state_encoder=state_encoder,
+                                         nn=nn,
+                                         config=config)
+
+    def select_move(self, state: GameState) -> Move:
+        policy = self.mcts.get_policy(state)
+        move_index = np.random.choice(self.game.action_space_size, p=policy)
+        return self.game.index_to_move(move_index)

@@ -67,3 +67,6 @@ class TicTacToeGameState(GameState[TicTacToeMove, TicTacToePlayer]):
         for point, player in self.board.grid.items():
             rev_board.grid[point] = player.opponent
         return TicTacToeGameState(rev_board, self.player.opponent)
+
+    def board_zobrist_hash(self) -> int:
+        return self.board.zobrist_hash()

@@ -23,7 +23,7 @@ class GoStateEncoder(GameStateEncoder[GoGameState]):
                 continue
             history.append(_board_to_matrix(h.board))
             h = h.previous_state
-        return torch.stack(history, dim=0).unsqueeze(0).to(self.device)
+        return torch.stack(history, dim=0).to(self.device)
 
 
 def _board_to_matrix(board: GoBoard) -> torch.Tensor:

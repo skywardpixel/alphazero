@@ -4,7 +4,6 @@ from typing import List, Dict, Tuple, Any
 
 import numpy as np
 import torch
-from tqdm import trange
 
 from alphazero.alphazero.nn_modules import AlphaZeroNeuralNet
 from alphazero.alphazero.state_encoders.state_encoder import GameStateEncoder
@@ -55,7 +54,7 @@ class MonteCarloTreeSearch:
         """
         s = state.canonical()
         s_comp = s.board_zobrist_hash()
-        for _ in trange(self.config['num_simulations'], position=2):
+        for _ in range(self.config['num_simulations']):
             self.search(s)
 
         counts = [self.Nsa[(s_comp, a)] for a in range(self.game.action_space_size)]
@@ -66,6 +65,7 @@ class MonteCarloTreeSearch:
         return [c / sum_counts for c in counts]
 
     def search(self, state: GameState) -> float:
+        # pylint: disable=too-many-locals
         """
         Search the tree from state s.
         :param s: state to start the MCTS search from
@@ -91,7 +91,7 @@ class MonteCarloTreeSearch:
             # new leaf node
             # use nn_modules to predict current policy and value
             encoded_state = self.state_encoder.encode(s)
-            self.Ps[s_comp], v = self.nn(encoded_state)
+            self.Ps[s_comp], v = self.nn(encoded_state.unsqueeze(0))
             # squeeze to remove 0th dim (batch)
             self.Ps[s_comp] = self.Ps[s_comp].squeeze()
             v = v.squeeze()

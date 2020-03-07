@@ -1,4 +1,4 @@
-from typing import Generic, List, Optional, TypeVar, Tuple
+from typing import Generic, List, Optional, TypeVar
 
 from .move import Move
 from .player import Player
@@ -36,9 +36,6 @@ class GameState(Generic[M, P]):
         raise NotImplementedError
 
     def canonical(self) -> 'GameState':
-        raise NotImplementedError
-
-    def compact(self) -> Tuple[P, int]:
         raise NotImplementedError
 
     def board_zobrist_hash(self) -> int:

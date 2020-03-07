@@ -5,7 +5,7 @@ from .exception import IllegalGoMoveException
 from .player import GoPlayer
 from .point import GoPoint
 from .string import GoString
-from .zobrist_hashing import EMPTY_BOARD, HASH_CODE
+from .zobrist_hash import EMPTY_BOARD, HASH_CODE
 
 
 class GoBoard:

@@ -4,6 +4,7 @@ from typing import Dict, Optional, List, Sequence
 from .exception import IllegalGomokuMoveException
 from .move import GomokuMove
 from .player import GomokuPlayer
+from .zobrist_hash import EMPTY_BOARD, HASH_CODE
 
 
 class GomokuBoard:
@@ -11,11 +12,13 @@ class GomokuBoard:
         self.size = size
         self.n = n
         self.grid: Dict[GomokuMove, GomokuPlayer] = dict()
+        self._hash = EMPTY_BOARD
 
     def apply_move(self, player: GomokuPlayer, move: GomokuMove) -> None:
         if not self.is_legal_move(move):
             raise IllegalGomokuMoveException
         self.grid[move] = player
+        self._hash ^= HASH_CODE[(move, player)]
 
     def get(self, r: int, c: int) -> Optional[GomokuPlayer]:
         return self.grid.get(GomokuMove(r, c))
@@ -126,3 +129,6 @@ class GomokuBoard:
 
     def copy(self) -> 'GomokuBoard':
         return copy.deepcopy(self)
+
+    def zobrist_hash(self) -> int:
+        return self._hash

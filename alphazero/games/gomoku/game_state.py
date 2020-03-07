@@ -67,3 +67,6 @@ class GomokuGameState(GameState[GomokuMove, GomokuPlayer]):
         for point, player in self.board.grid.items():
             rev_board.grid[point] = player.opponent
         return GomokuGameState(rev_board, self.player.opponent)
+
+    def board_zobrist_hash(self) -> int:
+        return self.board.zobrist_hash()

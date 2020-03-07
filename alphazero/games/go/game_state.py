@@ -1,4 +1,4 @@
-from typing import Optional, List, Tuple
+from typing import Optional, List
 
 from alphazero.games import GameState, Player
 from .board import GoBoard
@@ -118,9 +118,6 @@ class GoGameState(GameState[GoMove, GoPlayer]):
                            self.player.opponent,
                            self.previous_state,
                            self.last_move)
-
-    def compact(self) -> Tuple[GoPlayer, int]:
-        return self.player, self.board.zobrist_hash()
 
     def board_zobrist_hash(self) -> int:
         return self.board.zobrist_hash()

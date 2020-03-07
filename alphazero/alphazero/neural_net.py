@@ -51,10 +51,10 @@ class NeuralNetTrainer:
                                                 device=self.device)
 
         # pylint: disable=unused-variable
-        @trainer.on(Events.ITERATION_COMPLETED)
-        def log_training_loss(trainer):
-            print("Epoch[{}] Loss: {:.2f}"
-                  .format(trainer.state.epoch, trainer.state.output))
+        # @trainer.on(Events.ITERATION_COMPLETED)
+        # def log_training_loss(trainer):
+        #     print("Epoch[{}] Loss: {:.2f}"
+        #           .format(trainer.state.epoch, trainer.state.output))
 
         @trainer.on(Events.EPOCH_COMPLETED)
         def log_training_results(trainer):

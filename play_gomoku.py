@@ -18,7 +18,7 @@ def read_move(player: GomokuPlayer) -> GomokuMove:
     return GomokuMove(x, y)
 
 
-game = GomokuGame(7, 5)
+game = GomokuGame(9, 5)
 agent = AlphaBetaAgent(GomokuPlayer.WHITE, depth=2, eval_fn=simple_eval_func)
 
 while not game.is_over:
