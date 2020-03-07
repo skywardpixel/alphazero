@@ -1,17 +1,22 @@
 import copy
 from typing import Dict, Optional, List
 
+from alphazero.games.board import Board
 from .exception import IllegalTicTacToeMoveException
 from .move import TicTacToeMove
 from .player import TicTacToePlayer
 from .zobrist_hash import EMPTY_BOARD, HASH_CODE
 
 
-class TicTacToeBoard:
+class TicTacToeBoard(Board):
     def __init__(self, size: int = 3) -> None:
-        self.size = size
+        self._size = size
         self.grid: Dict[TicTacToeMove, TicTacToePlayer] = dict()
         self._hash = EMPTY_BOARD
+
+    @property
+    def size(self):
+        return self._size
 
     def apply_move(self, player: TicTacToePlayer, move: TicTacToeMove) -> None:
         if not self.is_legal_move(move):

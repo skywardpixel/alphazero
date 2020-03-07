@@ -1,6 +1,7 @@
 import copy
 from typing import Dict, Optional, List
 
+from alphazero.games.board import Board
 from .exception import IllegalGoMoveException
 from .player import GoPlayer
 from .point import GoPoint
@@ -8,11 +9,15 @@ from .string import GoString
 from .zobrist_hash import EMPTY_BOARD, HASH_CODE
 
 
-class GoBoard:
+class GoBoard(Board):
     def __init__(self, size: int = 15) -> None:
-        self.size = size
+        self._size = size
         self.grid: Dict[GoPoint, GoString] = dict()
         self._hash = EMPTY_BOARD
+
+    @property
+    def size(self):
+        return self._size
 
     def place_stone(self, player: GoPlayer, point: GoPoint) -> None:
         if not self.is_empty_point(point):

@@ -17,7 +17,7 @@ class GoGameState(GameState[GoMove, GoPlayer]):
                  previous_state: Optional['GoGameState'],
                  last_move: Optional[GoMove]) -> None:
         super().__init__()
-        self.board = board
+        self._board = board
         self._player = player
         self.previous_state = previous_state
         if self.previous_state is None:
@@ -33,6 +33,11 @@ class GoGameState(GameState[GoMove, GoPlayer]):
     def player(self) -> GoPlayer:
         return self._player
 
+    @property
+    def board(self) -> GoBoard:
+        return self._board
+
+    @classmethod
     @classmethod
     def get_initial_state(cls, size: int = 9) -> 'GoGameState':
         return cls(GoBoard(size), GoPlayer.BLACK, None, None)
@@ -118,6 +123,3 @@ class GoGameState(GameState[GoMove, GoPlayer]):
                            self.player.opponent,
                            self.previous_state,
                            self.last_move)
-
-    def board_zobrist_hash(self) -> int:
-        return self.board.zobrist_hash()

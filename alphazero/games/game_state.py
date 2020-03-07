@@ -1,13 +1,15 @@
 from typing import Generic, List, Optional, TypeVar
 
+from .board import Board
 from .move import Move
 from .player import Player
 
 M = TypeVar('M', bound=Move)
 P = TypeVar('P', bound=Player)
+B = TypeVar('B', bound=Board)
 
 
-class GameState(Generic[M, P]):
+class GameState(Generic[M, P, B]):
     canonical_player: Player
 
     def next(self, move: Move) -> 'GameState':
@@ -15,6 +17,10 @@ class GameState(Generic[M, P]):
 
     @property
     def player(self) -> P:
+        raise NotImplementedError
+
+    @property
+    def board(self) -> B:
         raise NotImplementedError
 
     def get_legal_moves(self) -> List[M]:
@@ -36,7 +42,4 @@ class GameState(Generic[M, P]):
         raise NotImplementedError
 
     def canonical(self) -> 'GameState':
-        raise NotImplementedError
-
-    def board_zobrist_hash(self) -> int:
         raise NotImplementedError

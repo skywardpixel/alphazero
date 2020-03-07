@@ -1,18 +1,23 @@
 import copy
 from typing import Dict, Optional, List, Sequence
 
+from alphazero.games.board import Board
 from .exception import IllegalGomokuMoveException
 from .move import GomokuMove
 from .player import GomokuPlayer
 from .zobrist_hash import EMPTY_BOARD, HASH_CODE
 
 
-class GomokuBoard:
+class GomokuBoard(Board):
     def __init__(self, size: int = 15, n: int = 5) -> None:
-        self.size = size
+        self._size = size
         self.n = n
         self.grid: Dict[GomokuMove, GomokuPlayer] = dict()
         self._hash = EMPTY_BOARD
+
+    @property
+    def size(self):
+        return self._size
 
     def apply_move(self, player: GomokuPlayer, move: GomokuMove) -> None:
         if not self.is_legal_move(move):

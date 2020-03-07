@@ -53,7 +53,7 @@ class MonteCarloTreeSearch:
         :return: a probability distribution on the action space of the game
         """
         s = state.canonical()
-        s_comp = s.board_zobrist_hash()
+        s_comp = s.board.zobrist_hash()
         for _ in range(self.config['num_simulations']):
             self.search(s)
 
@@ -72,7 +72,7 @@ class MonteCarloTreeSearch:
         :return: the estimated value of state `s`
         """
         s = state.canonical()
-        s_comp = s.board_zobrist_hash()
+        s_comp = s.board.zobrist_hash()
 
         if s.is_terminal():
             winner = s.winner()

@@ -12,12 +12,16 @@ class TicTacToeGameState(GameState[TicTacToeMove, TicTacToePlayer]):
 
     def __init__(self, board: TicTacToeBoard, player: TicTacToePlayer) -> None:
         super().__init__()
-        self.board = board
+        self._board = board
         self._player = player
 
     @property
     def player(self) -> TicTacToePlayer:
         return self._player
+
+    @property
+    def board(self) -> TicTacToeBoard:
+        return self._board
 
     @classmethod
     def get_initial_state(cls, size: int = 3) -> 'TicTacToeGameState':
@@ -67,6 +71,3 @@ class TicTacToeGameState(GameState[TicTacToeMove, TicTacToePlayer]):
         for point, player in self.board.grid.items():
             rev_board.grid[point] = player.opponent
         return TicTacToeGameState(rev_board, self.player.opponent)
-
-    def board_zobrist_hash(self) -> int:
-        return self.board.zobrist_hash()

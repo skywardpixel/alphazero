@@ -12,12 +12,16 @@ class GomokuGameState(GameState[GomokuMove, GomokuPlayer]):
 
     def __init__(self, board: GomokuBoard, player: GomokuPlayer) -> None:
         super().__init__()
-        self.board = board
+        self._board = board
         self._player = player
 
     @property
     def player(self) -> GomokuPlayer:
         return self._player
+
+    @property
+    def board(self) -> GomokuBoard:
+        return self._board
 
     @classmethod
     def get_initial_state(cls, size: int = 15, n: int = 5):
@@ -67,6 +71,3 @@ class GomokuGameState(GameState[GomokuMove, GomokuPlayer]):
         for point, player in self.board.grid.items():
             rev_board.grid[point] = player.opponent
         return GomokuGameState(rev_board, self.player.opponent)
-
-    def board_zobrist_hash(self) -> int:
-        return self.board.zobrist_hash()
