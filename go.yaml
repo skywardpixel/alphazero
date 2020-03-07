@@ -8,7 +8,7 @@ num_episodes: 5
 batch_size: 16
 nn_update_threshold: 0.55
 nn_update_num_games: 10
-log_dir: ./tmp/
+log_dir: ./tmp/go/
 lr: 0.01
 momentum: 0.8
 max_epochs: 50

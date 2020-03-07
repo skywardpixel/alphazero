@@ -8,7 +8,7 @@ from .player import GoPlayer
 from .scoring import compute_game_result
 
 
-class GoGameState(GameState[GoMove, GoPlayer]):
+class GoGameState(GameState[GoMove, GoPlayer, GoBoard]):
     canonical_player = GoPlayer.BLACK
 
     def __init__(self,
@@ -37,7 +37,6 @@ class GoGameState(GameState[GoMove, GoPlayer]):
     def board(self) -> GoBoard:
         return self._board
 
-    @classmethod
     @classmethod
     def get_initial_state(cls, size: int = 9) -> 'GoGameState':
         return cls(GoBoard(size), GoPlayer.BLACK, None, None)

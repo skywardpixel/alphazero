@@ -1,6 +1,6 @@
 from typing import Optional
 
-from alphazero.games import Player
+from .player import Player
 
 
 class Board:

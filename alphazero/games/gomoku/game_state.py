@@ -7,7 +7,7 @@ from .move import GomokuMove
 from .player import GomokuPlayer
 
 
-class GomokuGameState(GameState[GomokuMove, GomokuPlayer]):
+class GomokuGameState(GameState[GomokuMove, GomokuPlayer, GomokuBoard]):
     canonical_player = GomokuPlayer.BLACK
 
     def __init__(self, board: GomokuBoard, player: GomokuPlayer) -> None:

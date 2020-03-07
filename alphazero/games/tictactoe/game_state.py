@@ -7,7 +7,7 @@ from .move import TicTacToeMove
 from .player import TicTacToePlayer
 
 
-class TicTacToeGameState(GameState[TicTacToeMove, TicTacToePlayer]):
+class TicTacToeGameState(GameState[TicTacToeMove, TicTacToePlayer, TicTacToeBoard]):
     canonical_player = TicTacToePlayer.X
 
     def __init__(self, board: TicTacToeBoard, player: TicTacToePlayer) -> None:
