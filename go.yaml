@@ -12,3 +12,4 @@ log_dir: ./tmp/go/
 lr: 0.01
 momentum: 0.8
 max_epochs: 50
+patience: 10

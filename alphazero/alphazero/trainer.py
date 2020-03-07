@@ -5,12 +5,12 @@ from typing import List, Any, Dict, Tuple
 import numpy as np
 from torch import nn
 
+from alphazero.agents.alphazero import AlphaZeroArgMaxAgent
 from alphazero.alphazero.mcts import MonteCarloTreeSearch
 from alphazero.alphazero.types import TrainExample
 from alphazero.games import Game
 from .neural_net import NeuralNetTrainer
 from .state_encoders import GameStateEncoder, torch
-from ..agents.alphazero import AlphaZeroArgMaxAgent
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,9 @@ class AlphaZeroTrainer:
         self.config = config
 
     def train(self):
-        nn_updated = []
+        patience = self.config['patience']
+        log_dir = self.config['log_dir']
+        nn_updated = [True] * patience
         for i in range(self.config['num_iters']):
             logger.info('Iteration %d/%d', i + 1, self.config['num_iters'])
             examples_iter: List[TrainExample] = []
@@ -59,12 +61,15 @@ class AlphaZeroTrainer:
                 self.mcts.nn = nn_old
                 nn_updated.append(False)
             torch.save(self.mcts.nn.state_dict(),
-                       f'./trained_{self.game.__class__.__name__}_iter{i}.pth')
-            if len(nn_updated) > 10 and all(not x for x in nn_updated[-10:]):
-                logger.info('NN not updated for 10 iters, stopping early')
+                       f'./{log_dir}/iter{i}.pth')
+
+            if len(nn_updated) > patience \
+                    and all(not x for x in nn_updated[-patience:]):
+                logger.info('NN not updated for %d iters, stopping early', patience)
                 break
+
         torch.save(self.mcts.nn.state_dict(),
-                   f'./trained_{self.game.__class__.__name__}_final.pth')
+                   f'./{log_dir}/best.pth')
 
     def run_episode(self) -> List[TrainExample]:
         """
