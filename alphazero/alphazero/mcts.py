@@ -49,17 +49,21 @@ class MonteCarloTreeSearch:
         :param temperature: temperature for output policy vector
         :return: a probability distribution on the action space of the game
         """
-        s = state.canonical()
+        state = state.canonical()
+        s = state.board.zobrist_hash()
         for _ in range(self.config['num_simulations']):
-            self.search(s)
+            self.search(state)
 
-        counts = [self.Nsa[(s.board.zobrist_hash(), a)]
-                  for a in range(self.game.action_space_size)]
+        counts = np.array([self.Nsa[(s, a)]
+                           for a in range(self.game.action_space_size)])
 
         # convert count into a probability distribution
-        counts = [c ** (1. / temperature) for c in counts]
-        sum_counts = sum(counts)
-        return [c / sum_counts for c in counts]
+        if temperature == 0:
+            # return one-hot vector for policy
+            policy = np.eye(self.game.action_space_size)[np.argmax(counts)]
+            return policy
+        counts = counts ** (1. / temperature)
+        return counts / np.sum(counts)
 
     def search(self, state: GameState) -> float:
         # pylint: disable=too-many-locals
@@ -104,7 +108,6 @@ class MonteCarloTreeSearch:
                 self.Ps[s] += legal_vector
                 sum_Ps = np.sum(self.Ps[s])
                 self.Ps[s] /= sum_Ps
-            self.Ns[s] = 0
 
             return -v
 

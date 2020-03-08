@@ -38,7 +38,10 @@ class GomokuGameState(GameState[GomokuMove, GomokuPlayer, GomokuBoard]):
         return GomokuGameState(next_board, self.player.opponent)
 
     def get_legal_moves(self) -> List[GomokuMove]:
-        return self.board.get_legal_moves(within=2)
+        return self.board.get_legal_moves()
+
+    def get_legal_moves_within(self, within: int = 0) -> List[GomokuMove]:
+        return self.board.get_legal_moves(within)
 
     def is_legal_move(self, move: GomokuMove) -> bool:
         return self.board.is_legal_move(move)

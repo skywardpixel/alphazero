@@ -28,8 +28,8 @@ class GomokuBoard(Board):
     def get(self, r: int, c: int) -> Optional[GomokuPlayer]:
         return self.grid.get(GomokuMove(r, c))
 
-    def get_legal_moves(self, within: Optional[int] = None) -> List[GomokuMove]:
-        if within is not None:
+    def get_legal_moves(self, within: int = 0) -> List[GomokuMove]:
+        if within:
             moves = set()
             for p in self.grid:
                 for r in range(p.x - within, p.x + within + 1):
@@ -40,7 +40,8 @@ class GomokuBoard(Board):
             return list(moves)
         else:
             return [GomokuMove(r, c)
-                    for r in range(self.size) for c in range(self.size)
+                    for r in range(self.size)
+                    for c in range(self.size)
                     if self.get(r, c) is None]
 
     def is_legal_move(self, move: GomokuMove) -> bool:
