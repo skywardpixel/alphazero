@@ -9,7 +9,7 @@ from alphazero.agents.alphazero import AlphaZeroArgMaxAgent
 from alphazero.alphazero.mcts import MonteCarloTreeSearch
 from alphazero.alphazero.types import TrainExample
 from alphazero.games import Game
-from .neural_net import NeuralNetTrainer
+from .nn_trainer import NeuralNetTrainer
 from .state_encoders import GameStateEncoder, torch
 
 logger = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ class AlphaZeroTrainer:
 
             nn_old = copy.deepcopy(self.mcts.nn)
             nn_trainer = NeuralNetTrainer(self.mcts.nn, self.config)
-            nn_trainer.train(examples_iter)
+            nn_trainer.train(examples_iter, i)
             logger.info('NN training finished, now pitting old NN and new NN')
             nn_new = self.mcts.nn
 
@@ -100,7 +100,7 @@ class AlphaZeroTrainer:
 
         # must transform to tensors for nn training
         # pylint: disable=not-callable
-        examples = [(self.state_encoder.encode(s), torch.tensor(pi), z)
+        examples = [(self.state_encoder.encode(s), torch.tensor(pi).float(), z)
                     for s, pi, _ in examples]
         return examples
 

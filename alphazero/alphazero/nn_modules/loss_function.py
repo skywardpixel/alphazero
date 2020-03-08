@@ -16,5 +16,4 @@ class AlphaZeroLoss(_Loss):
         pi_loss = -torch.bmm(pi.view(batch_size, 1, action_space_size),
                              torch.log(p).view(batch_size, action_space_size, 1))
         pi_loss = pi_loss.flatten()
-        # pi_loss = -torch.dot(pi, torch.log(p))
         return torch.mean(v_loss + pi_loss)
