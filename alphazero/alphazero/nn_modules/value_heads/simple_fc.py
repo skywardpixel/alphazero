@@ -17,4 +17,4 @@ class SimpleFullyConnectedValueHead(nn.Module):
         x = self.fc2(x)
         x = F.relu(x)
         x = self.fc_out(x)
-        return x
+        return F.tanh(x)

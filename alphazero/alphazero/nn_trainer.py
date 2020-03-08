@@ -3,7 +3,7 @@ from typing import List, Dict, Any
 
 from ignite.engine import create_supervised_trainer, create_supervised_evaluator, Events
 from ignite.metrics import Loss
-from torch.optim import SGD
+from torch.optim import Adam
 from torch.utils.data import Dataset, DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
@@ -36,8 +36,8 @@ class NeuralNetTrainer:
         self.batch_size = config['batch_size']
         self.device = config['device']
         self.max_epochs = config['max_epochs']
-        self.optimizer = SGD(self.model.parameters(),
-                             lr=config['lr'], momentum=config['momentum'])
+        self.optimizer = Adam(self.model.parameters(),
+                              lr=config['lr'])
 
     def train(self, data: List[TrainExample], iteration: int):
         dataset = AlphaZeroDataset(data)
