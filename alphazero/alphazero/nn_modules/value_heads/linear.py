@@ -1,5 +1,4 @@
 import torch
-import torch.nn.functional as F
 from torch import nn
 
 
@@ -11,4 +10,4 @@ class LinearValueHead(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # pylint: disable=arguments-differ
         x = self.fc_out(x)
-        return F.tanh(x)
+        return torch.tanh(x)

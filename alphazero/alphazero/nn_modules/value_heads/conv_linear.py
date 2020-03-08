@@ -20,4 +20,4 @@ class ConvLinearValueHead(nn.Module):
         x = self.fc1(x)
         x = F.relu(x)
         x = self.fc2(x)
-        return F.tanh(x)
+        return torch.tanh(x)
