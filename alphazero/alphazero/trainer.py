@@ -28,9 +28,11 @@ class AlphaZeroTrainer:
 
     def train(self):
         # pylint: disable=too-many-locals
+        self.mcts.nn.eval()
         patience = self.config['patience']
         log_dir = self.config['log_dir']
         nn_updated = [True] * patience
+        torch.save(self.mcts.nn.state_dict(), f'{log_dir}/best.pth')
         for i in range(self.config['num_iters']):
             logger.info('Iteration %d/%d', i + 1, self.config['num_iters'])
             examples_iter: List[TrainExample] = []
@@ -45,7 +47,9 @@ class AlphaZeroTrainer:
 
             nn_old = copy.deepcopy(self.mcts.nn)
             nn_trainer = NeuralNetTrainer(self.mcts.nn, self.config)
-            nn_trainer.train(examples_iter, i)
+            nn_trainer.train(examples_iter, i + 1)
+            torch.save(self.mcts.nn.state_dict(), f'{log_dir}/iter{i}.pth')
+
             logger.info('NN training finished, now pitting old NN and new NN')
             nn_new = self.mcts.nn
 
@@ -54,21 +58,20 @@ class AlphaZeroTrainer:
             logger.info('Result: old_wins: %d, new_wins: %d, ties: %d, total: %d',
                         old_wins, new_wins, ties, pit_num_games)
             new_win_rate = new_wins / pit_num_games
-            if new_win_rate >= self.config['nn_update_threshold']:
+            if new_win_rate > self.config['nn_update_threshold']:
                 logger.info('switching to new NN')
+                torch.save(self.mcts.nn.state_dict(), f'{log_dir}/best.pth')
                 nn_updated.append(True)
             else:
                 logger.info('keeping old NN')
                 self.mcts.nn = nn_old
                 nn_updated.append(False)
-            torch.save(self.mcts.nn.state_dict(), f'./{log_dir}/iter{i}.pth')
 
             if all(not x for x in nn_updated[-patience:]):
                 # end training early if NN is not update for over patience iterations
                 logger.info('NN not updated for %d iters, stopping early', patience)
                 break
 
-        torch.save(self.mcts.nn.state_dict(), f'./{log_dir}/best.pth')
 
     def run_episode(self) -> List[TrainExample]:
         """
@@ -82,8 +85,8 @@ class AlphaZeroTrainer:
         while not self.game.is_over:
             pi = self.mcts.get_policy(self.game.state)
             # pylint: disable=fixme
-            # TODO: augmentation by symmetries
-            examples.append((self.game.state, pi, None))
+            # TODO: augmentation by symmetries, what about history?
+            examples.append((self.game.state.canonical(), pi, None))
             move_index = np.random.choice(self.game.action_space_size, p=pi)
             move = self.game.index_to_move(move_index)
             self.game.play(move)
@@ -115,6 +118,8 @@ class AlphaZeroTrainer:
         :param nn_new:
         :return: a tuple (old_wins, new_wins, ties)
         """
+        nn_old.eval()
+        nn_new.eval()
         old_wins, new_wins, ties = 0, 0, 0
         for g in range(num_games):
             logger.info('Game %d/%d', g + 1, num_games)

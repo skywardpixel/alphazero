@@ -4,11 +4,11 @@ encoding_dim: 64
 num_simulations: 25
 c_puct: 1.
 num_iters: 50
-num_episodes: 20
+num_episodes: 100
 batch_size: 16
 nn_update_threshold: 0.50
 nn_update_num_games: 100
-log_dir: ./tmp/gomoku/
+log_dir: ./tmp/gomoku
 lr: 0.01
 momentum: 0.8
 max_epochs: 50
