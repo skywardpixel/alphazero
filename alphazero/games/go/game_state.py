@@ -9,7 +9,6 @@ from .scoring import compute_game_result
 
 
 class GoGameState(GameState[GoMove, GoPlayer, GoBoard]):
-    canonical_player = GoPlayer.BLACK
 
     def __init__(self,
                  board: GoBoard,

@@ -10,8 +10,6 @@ B = TypeVar('B', bound=Board)
 
 
 class GameState(Generic[M, P, B]):
-    canonical_player: Player
-
     def next(self, move: Move) -> 'GameState':
         raise NotImplementedError
 

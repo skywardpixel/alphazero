@@ -5,6 +5,8 @@ from .player import GoPlayer
 
 
 class GoGame(Game[GoGameState, GoMove, GoPlayer]):
+    canonical_player = GoPlayer.BLACK
+
     def __init__(self, size: int = 9):
         super().__init__()
         self.size = size

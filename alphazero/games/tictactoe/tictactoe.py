@@ -5,6 +5,8 @@ from .player import TicTacToePlayer
 
 
 class TicTacToeGame(Game[TicTacToeGameState, TicTacToeMove, TicTacToePlayer]):
+    canonical_player = TicTacToePlayer.X
+
     def __init__(self, size: int = 3):
         super().__init__()
         self.size = size

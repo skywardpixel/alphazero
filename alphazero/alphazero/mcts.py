@@ -73,9 +73,9 @@ class MonteCarloTreeSearch:
 
         if state.is_terminal():
             winner = state.winner()
-            if winner == state.canonical_player:
+            if winner == self.game.canonical_player:
                 score = +1.
-            elif winner == state.canonical_player.opponent:
+            elif winner == self.game.canonical_player.opponent:
                 score = -1.
             else:
                 score = 0.

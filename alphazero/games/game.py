@@ -10,6 +10,7 @@ P = TypeVar('P', bound=Player)
 
 
 class Game(Generic[S, M, P]):
+    canonical_player: Player
 
     def play(self, move: M) -> None:
         raise NotImplementedError

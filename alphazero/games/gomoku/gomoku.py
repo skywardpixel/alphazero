@@ -5,6 +5,8 @@ from .player import GomokuPlayer
 
 
 class GomokuGame(Game[GomokuGameState, GomokuMove, GomokuPlayer]):
+    canonical_player = GomokuPlayer.BLACK
+
     def __init__(self, size: int = 15, n: int = 5):
         super().__init__()
         self.size = size

@@ -27,6 +27,7 @@ class AlphaZeroTrainer:
         self.config = config
 
     def train(self):
+        # pylint: disable=too-many-locals
         patience = self.config['patience']
         log_dir = self.config['log_dir']
         nn_updated = [True] * patience
@@ -48,28 +49,26 @@ class AlphaZeroTrainer:
             logger.info('NN training finished, now pitting old NN and new NN')
             nn_new = self.mcts.nn
 
-            old_wins, new_wins, ties = \
-                self._compare_nn(nn_old, nn_new, self.config['nn_update_num_games'])
-            logger.info('old_wins: %d, new_wins: %d, ties: %d, total: %d',
-                        old_wins, new_wins, ties, self.config['nn_update_num_games'])
-            if new_wins > \
-                    self.config['nn_update_threshold'] * self.config['nn_update_num_games']:
+            pit_num_games = self.config['nn_update_num_games']
+            old_wins, new_wins, ties = self._compare_nn(nn_old, nn_new, pit_num_games)
+            logger.info('Result: old_wins: %d, new_wins: %d, ties: %d, total: %d',
+                        old_wins, new_wins, ties, pit_num_games)
+            new_win_rate = new_wins / pit_num_games
+            if new_win_rate >= self.config['nn_update_threshold']:
                 logger.info('switching to new NN')
                 nn_updated.append(True)
             else:
                 logger.info('keeping old NN')
                 self.mcts.nn = nn_old
                 nn_updated.append(False)
-            torch.save(self.mcts.nn.state_dict(),
-                       f'./{log_dir}/iter{i}.pth')
+            torch.save(self.mcts.nn.state_dict(), f'./{log_dir}/iter{i}.pth')
 
-            if len(nn_updated) > patience \
-                    and all(not x for x in nn_updated[-patience:]):
+            if all(not x for x in nn_updated[-patience:]):
+                # end training early if NN is not update for over patience iterations
                 logger.info('NN not updated for %d iters, stopping early', patience)
                 break
 
-        torch.save(self.mcts.nn.state_dict(),
-                   f'./{log_dir}/best.pth')
+        torch.save(self.mcts.nn.state_dict(), f'./{log_dir}/best.pth')
 
     def run_episode(self) -> List[TrainExample]:
         """
@@ -82,6 +81,7 @@ class AlphaZeroTrainer:
 
         while not self.game.is_over:
             pi = self.mcts.get_policy(self.game.state)
+            # pylint: disable=fixme
             # TODO: augmentation by symmetries
             examples.append((self.game.state, pi, None))
             move_index = np.random.choice(self.game.action_space_size, p=pi)
@@ -96,9 +96,9 @@ class AlphaZeroTrainer:
         if self.game.winner is None:
             z = 0.
         else:
-            z = +1. if self.game.state.canonical_player == self.game.winner else -1.
+            z = +1. if self.game.canonical_player == self.game.winner else -1.
 
-        # must transform to tensors for nn training
+        # transform to tensors for nn training
         # pylint: disable=not-callable
         examples = [(self.state_encoder.encode(s), torch.tensor(pi), z)
                     for s, pi, _ in examples]
@@ -121,7 +121,10 @@ class AlphaZeroTrainer:
             self.game.reset()
             agent_old = AlphaZeroArgMaxAgent(self.game, self.state_encoder, nn_old, self.config)
             agent_new = AlphaZeroArgMaxAgent(self.game, self.state_encoder, nn_new, self.config)
+
+            # Let old start first for even-numbered games, new for odd-numbered games
             current_player = agent_old if g % 2 == 0 else agent_new
+
             while not self.game.is_over:
                 move = current_player.select_move(self.game.state)
                 self.game.play(move)
@@ -131,12 +134,13 @@ class AlphaZeroTrainer:
                 logger.info('Result: tie')
                 ties += 1
             else:
-                if g % 2 == 0:
-                    winner_agent = 'new' if self.game.winner.value == 1 else 'old'
+                if self.game.winner == self.game.canonical_player:
+                    # first player wins
+                    winner = 'old' if g % 2 == 0 else 'new'
                 else:
-                    winner_agent = 'old' if self.game.winner.value == 1 else 'new'
-                logger.info('Result: %s (%s) wins', self.game.winner, winner_agent)
-                if winner_agent == 'old':
+                    winner = 'new' if g % 2 == 0 else 'old'
+                logger.info('Result: %s (%s) wins', self.game.winner, winner)
+                if winner == 'old':
                     old_wins += 1
                 else:
                     new_wins += 1

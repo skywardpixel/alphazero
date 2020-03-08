@@ -8,7 +8,6 @@ from .player import GomokuPlayer
 
 
 class GomokuGameState(GameState[GomokuMove, GomokuPlayer, GomokuBoard]):
-    canonical_player = GomokuPlayer.BLACK
 
     def __init__(self, board: GomokuBoard, player: GomokuPlayer) -> None:
         super().__init__()
