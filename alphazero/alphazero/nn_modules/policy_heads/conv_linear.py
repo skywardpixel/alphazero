@@ -4,7 +4,11 @@ from torch import nn
 
 
 class ConvLinearPolicyHead(nn.Module):
-    def __init__(self, game_size, in_channels, output_dim, num_conv_filters: int = 2):
+    def __init__(self,
+                 game_size: int,
+                 in_channels: int,
+                 output_dim: int,
+                 num_conv_filters: int = 2) -> None:
         super().__init__()
         self.conv = nn.Conv2d(in_channels, num_conv_filters, kernel_size=1)
         self.bn = nn.BatchNorm2d(num_conv_filters)

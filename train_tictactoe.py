@@ -5,10 +5,7 @@ import torch
 import yaml
 
 from alphazero.alphazero.mcts import MonteCarloTreeSearch
-from alphazero.alphazero.nn_modules import AlphaZeroNeuralNet
-from alphazero.alphazero.nn_modules.encoders import SimpleConvNetEncoder
-from alphazero.alphazero.nn_modules.policy_heads import SimpleFullyConnectedPolicyHead
-from alphazero.alphazero.nn_modules.value_heads import SimpleFullyConnectedValueHead
+from alphazero.alphazero.nn_modules.dual_resnet import dual_resnet
 from alphazero.alphazero.state_encoders.ttt_state_encoder import TicTacToeStateEncoder
 from alphazero.alphazero.trainer import AlphaZeroTrainer
 from alphazero.games.tictactoe import TicTacToeGame
@@ -30,12 +27,14 @@ if __name__ == '__main__':
     # value_head = LinearValueHead(config)
     # policy_head = LinearPolicyHead(game.action_space_size, config)
 
-    encoder = SimpleConvNetEncoder(config)
-    value_head = SimpleFullyConnectedValueHead(config)
-    policy_head = SimpleFullyConnectedPolicyHead(game.action_space_size,
-                                                 config)
+    # encoder = SimpleConvNetEncoder(config)
+    # value_head = SimpleFullyConnectedValueHead(config)
+    # policy_head = SimpleFullyConnectedPolicyHead(game.action_space_size,
+    #                                              config)
 
-    net = AlphaZeroNeuralNet(encoder, policy_head, value_head, config)
+    # net = AlphaZeroNeuralNet(encoder, policy_head, value_head, config)
+    net = dual_resnet(game, config)
+
     mcts = MonteCarloTreeSearch(game=game,
                                 state_encoder=state_encoder,
                                 nn=net,

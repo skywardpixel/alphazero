@@ -12,3 +12,7 @@ log_dir: ./tmp/go/
 lr: 0.001
 max_epochs: 50
 patience: 10
+
+num_resnet_filters: 16
+num_res_blocks: 9
+value_head_hidden_dim: 64
