@@ -6,7 +6,7 @@ import yaml
 
 from alphazero.agents.alphazero import AlphaZeroArgMaxAgent
 from alphazero.alphazero.mcts import MonteCarloTreeSearch
-from alphazero.alphazero.nn_modules.dual_resnet import dual_resnet
+from alphazero.alphazero.nn_modules.nets import dual_resnet
 from alphazero.alphazero.state_encoders.ttt_state_encoder import TicTacToeStateEncoder
 from alphazero.games.tictactoe import TicTacToeGame, TicTacToePlayer, TicTacToeMove
 

@@ -1,8 +1,11 @@
 from typing import Any, Dict
 
 from alphazero.alphazero.nn_modules import AlphaZeroNeuralNet
+from alphazero.alphazero.nn_modules.encoders import SimpleConvNetEncoder, LinearEncoder
 from alphazero.alphazero.nn_modules.encoders.dual_res import DualResNetEncoder
+from alphazero.alphazero.nn_modules.policy_heads import LinearPolicyHead, SimpleFullyConnectedPolicyHead
 from alphazero.alphazero.nn_modules.policy_heads.conv_linear import ConvLinearPolicyHead
+from alphazero.alphazero.nn_modules.value_heads import LinearValueHead, SimpleFullyConnectedValueHead
 from alphazero.alphazero.nn_modules.value_heads.conv_linear import ConvLinearValueHead
 from alphazero.games import Game
 
@@ -17,4 +20,18 @@ def dual_resnet(game: Game, config: Dict[str, Any]):
     value_head = ConvLinearValueHead(game_size=config['game_size'],
                                      in_channels=config['num_resnet_filters'],
                                      hidden_dim=config['value_head_hidden_dim'])
+    return AlphaZeroNeuralNet(encoder, policy_head, value_head, config)
+
+
+def minimal_net(game: Game, config: Dict[str, Any]):
+    encoder = LinearEncoder(config)
+    policy_head = LinearPolicyHead(game.action_space_size, config)
+    value_head = LinearValueHead(config)
+    return AlphaZeroNeuralNet(encoder, policy_head, value_head, config)
+
+
+def simple_conv_fc_net(game: Game, config: Dict[str, Any]):
+    encoder = SimpleConvNetEncoder(config)
+    policy_head = SimpleFullyConnectedPolicyHead(game.action_space_size, config)
+    value_head = SimpleFullyConnectedValueHead(config)
     return AlphaZeroNeuralNet(encoder, policy_head, value_head, config)

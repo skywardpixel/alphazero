@@ -5,7 +5,7 @@ import torch
 import yaml
 
 from alphazero.alphazero.mcts import MonteCarloTreeSearch
-from alphazero.alphazero.nn_modules.dual_resnet import dual_resnet
+from alphazero.alphazero.nn_modules.nets import dual_resnet
 from alphazero.alphazero.state_encoders.gomoku_state_encoder import GomokuStateEncoder
 from alphazero.alphazero.trainer import AlphaZeroTrainer
 from alphazero.games.gomoku import GomokuGame

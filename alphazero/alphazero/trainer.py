@@ -57,17 +57,19 @@ class AlphaZeroTrainer:
             old_wins, new_wins, ties = self._compare_nn(nn_old, nn_new, pit_num_games)
             logger.info('Result: old_wins: %d, new_wins: %d, ties: %d, total: %d',
                         old_wins, new_wins, ties, pit_num_games)
-            new_win_rate = new_wins / pit_num_games
-            if new_win_rate > self.config['nn_update_threshold']:
-                logger.info('switching to new NN')
+
+            update_threshold = self.config['nn_update_threshold']
+            if old_wins + new_wins != 0 \
+                    and new_wins / (old_wins + new_wins) >= update_threshold:
+                logger.info('Switching to new NN')
                 torch.save(self.mcts.nn.state_dict(), f'{log_dir}/best.pth')
                 nn_updated.append(True)
             else:
-                logger.info('keeping old NN')
+                logger.info('Keeping old NN')
                 self.mcts.nn = nn_old
                 nn_updated.append(False)
 
-            if all(not x for x in nn_updated[-patience:]):
+            if not any(nn_updated[-patience:]):
                 # end training early if NN is not updated for over patience iterations
                 logger.info('NN not updated for %d iters, stopping early', patience)
                 break

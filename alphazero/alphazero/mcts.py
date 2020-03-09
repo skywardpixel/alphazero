@@ -29,7 +29,6 @@ class MonteCarloTreeSearch:
         self.state_encoder = state_encoder
         self.nn = nn
         self.config = config
-        self.visited_states = set()
 
         # Q(s, a) Q values for state-action pair
         self.Qsa: Dict[Tuple[State, Action], Value] = defaultdict(float)
@@ -39,8 +38,6 @@ class MonteCarloTreeSearch:
         self.Ns: Dict[State, int] = defaultdict(int)
         # p(s) initial policies for state, returned by NN
         self.Ps: Dict[State, np.ndarray] = dict()
-        # terminal state values
-        self.Ts: Dict[State, Value] = dict()
 
     def get_policy(self, state: GameState, temperature: float = 1) -> List[float]:
         """
@@ -145,9 +142,7 @@ class MonteCarloTreeSearch:
 
     def reset(self):
         # clear all states
-        self.visited_states.clear()
         self.Qsa.clear()
         self.Ps.clear()
         self.Nsa.clear()
         self.Ns.clear()
-        self.Ts.clear()
