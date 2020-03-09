@@ -23,16 +23,6 @@ if __name__ == '__main__':
     game = TicTacToeGame(config['game_size'])
     state_encoder = TicTacToeStateEncoder(config)
 
-    # encoder = LinearEncoder(config)
-    # value_head = LinearValueHead(config)
-    # policy_head = LinearPolicyHead(game.action_space_size, config)
-
-    # encoder = SimpleConvNetEncoder(config)
-    # value_head = SimpleFullyConnectedValueHead(config)
-    # policy_head = SimpleFullyConnectedPolicyHead(game.action_space_size,
-    #                                              config)
-
-    # net = AlphaZeroNeuralNet(encoder, policy_head, value_head, config)
     net = dual_resnet(game, config)
 
     mcts = MonteCarloTreeSearch(game=game,

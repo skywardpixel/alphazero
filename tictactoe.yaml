@@ -10,9 +10,10 @@ nn_update_threshold: 0.50
 nn_update_num_games: 100
 log_dir: ./tmp/ttt/
 lr: 0.01
+momentum: 0.9
+weight_decay: 0.01
 max_epochs: 50
 patience: 10
-
 num_resnet_filters: 8
 num_res_blocks: 3
 value_head_hidden_dim: 16
