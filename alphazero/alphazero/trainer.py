@@ -68,10 +68,9 @@ class AlphaZeroTrainer:
                 nn_updated.append(False)
 
             if all(not x for x in nn_updated[-patience:]):
-                # end training early if NN is not update for over patience iterations
+                # end training early if NN is not updated for over patience iterations
                 logger.info('NN not updated for %d iters, stopping early', patience)
                 break
-
 
     def run_episode(self) -> List[TrainExample]:
         """
