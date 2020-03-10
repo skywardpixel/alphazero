@@ -6,7 +6,7 @@ import yaml
 
 from alphazero.agents.alphazero import AlphaZeroArgMaxAgent
 from alphazero.alphazero.mcts import MonteCarloTreeSearch
-from alphazero.alphazero.nn_modules.nets import dual_resnet
+from alphazero.alphazero.nn_modules.nets import dual_resnet, simple_conv_fc_net
 from alphazero.alphazero.state_encoders.ttt_state_encoder import TicTacToeStateEncoder
 from alphazero.games.tictactoe import TicTacToeGame, TicTacToePlayer, TicTacToeMove
 
@@ -30,16 +30,6 @@ if __name__ == '__main__':
     game = TicTacToeGame(config['game_size'])
     state_encoder = TicTacToeStateEncoder(config)
 
-    # encoder = LinearEncoder(config)
-    # value_head = LinearValueHead(config)
-    # policy_head = LinearPolicyHead(game.action_space_size, config)
-
-    # encoder = SimpleConvNetEncoder(config)
-    # value_head = SimpleFullyConnectedValueHead(config)
-    # policy_head = SimpleFullyConnectedPolicyHead(game.action_space_size, config)
-    #
-    # net = AlphaZeroNeuralNet(encoder, policy_head, value_head, config)
-
     net = dual_resnet(game, config)
     mcts = MonteCarloTreeSearch(game=game,
                                 state_encoder=state_encoder,
@@ -53,7 +43,7 @@ if __name__ == '__main__':
     while not game.is_over:
         game.show_board()
         # print(f"current state score by eval func: {agent.eval_fn(game.state, agent.player)}")
-        if game.current_player == TicTacToePlayer.X:
+        if game.current_player == TicTacToePlayer.O:
             move = read_move(game.current_player)
             while not game.state.is_legal_move(move):
                 print("Illegal move, try again")

@@ -1,4 +1,6 @@
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, List, Tuple
+
+import torch
 
 from .game_state import GameState
 from .move import Move
@@ -56,5 +58,16 @@ class Game(Generic[S, M, P]):
         Inverse of move_to_index.
         :param index: the index of the move
         :return: the move corresponding to the index
+        """
+        raise NotImplementedError
+
+    def symmetries(self, state: torch.Tensor, policy: List[float]) -> List[Tuple[torch.Tensor, List[float]]]:
+        """
+        Used by AlphaZero to augment training data.
+        Probably shouldn't be here, putting here to utilize Game's knowledge
+        of converting between index and moves.
+        :param state:
+        :param policy:
+        :return:
         """
         raise NotImplementedError

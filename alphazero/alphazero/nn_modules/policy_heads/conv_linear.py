@@ -21,4 +21,4 @@ class ConvLinearPolicyHead(nn.Module):
         x = F.relu(x)
         x = x.view(-1, self.fc.in_features)
         x = self.fc(x)
-        return F.softmax(x, dim=-1)
+        return F.log_softmax(x, dim=-1)

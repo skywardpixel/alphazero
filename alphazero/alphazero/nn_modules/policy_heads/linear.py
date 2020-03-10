@@ -13,5 +13,5 @@ class LinearPolicyHead(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # pylint: disable=arguments-differ
         x = self.fc_out(x)
-        x = F.softmax(x, dim=-1)
+        x = F.log_softmax(x, dim=-1)
         return x

@@ -19,5 +19,5 @@ class SimpleFullyConnectedPolicyHead(nn.Module):
         x = self.fc2(x)
         x = F.relu(x)
         x = self.fc_out(x)
-        x = F.softmax(x, dim=-1)
+        x = F.log_softmax(x, dim=-1)
         return x

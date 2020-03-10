@@ -89,7 +89,7 @@ class MonteCarloTreeSearch:
             policy, value = self.nn(encoded_state.unsqueeze(0))
 
             # squeeze to remove 0th dim (batch)
-            self.Ps[s] = policy.detach().cpu().squeeze().numpy()
+            self.Ps[s] = np.exp(policy.detach().cpu().squeeze().numpy())
             v = value.detach().cpu().squeeze().numpy()
 
             # normalize policy

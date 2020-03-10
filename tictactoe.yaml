@@ -1,19 +1,29 @@
+# game config
 game_size: 3
 num_history: 1
-encoding_dim: 32
+
+# trainer config
+num_iters: 25
+num_episodes: 25
+nn_update_threshold: 0.55
+nn_update_num_games: 50
+temperature_threshold: 6
+train_example_num_iters: 20
+
+# MCTS config
 num_simulations: 25
 c_puct: 1.
-num_iters: 50
-num_episodes: 100
-batch_size: 32
-nn_update_threshold: 0.50
-nn_update_num_games: 100
+
+# NN trainer
 log_dir: ./tmp/ttt/
-lr: 0.01
-momentum: 0.9
+lr: 0.005
+momentum: 0.8
+batch_size: 64
 weight_decay: 0.01
-max_epochs: 50
+max_epochs: 10
 patience: 10
-num_resnet_filters: 8
-num_res_blocks: 3
-value_head_hidden_dim: 16
+
+# NN config
+num_resnet_filters: 256
+num_res_blocks: 4
+value_head_hidden_dim: 256

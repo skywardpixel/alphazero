@@ -1,8 +1,8 @@
 import torch
-from torch.nn.modules.loss import _Loss
+from torch import nn
 
 
-class AlphaZeroLoss(_Loss):
+class AlphaZeroLoss(nn.Module):
     """
     Computes the loss for the AlphaZero neural network.
     """
@@ -14,6 +14,6 @@ class AlphaZeroLoss(_Loss):
         v_loss = (v - z) ** 2
         batch_size, action_space_size = pi.shape
         pi_loss = -torch.bmm(pi.view(batch_size, 1, action_space_size),
-                             torch.log(p).view(batch_size, action_space_size, 1))
+                             p.view(batch_size, action_space_size, 1))
         pi_loss = pi_loss.flatten()
         return torch.mean(v_loss + pi_loss)

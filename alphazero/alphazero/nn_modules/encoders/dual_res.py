@@ -27,7 +27,7 @@ class DualResNetEncoder(nn.Module):
         super().__init__()
         self.conv_in = nn.Conv2d(in_channels, num_filters, kernel_size=3, padding=1)
         self.bn_in = nn.BatchNorm2d(num_filters)
-        self.res_tower = nn.Sequential(*[DualResBlock(num_filters)] * num_blocks)
+        self.res_tower = nn.Sequential(*([DualResBlock(num_filters)] * num_blocks))
 
     def forward(self, encoded_state: torch.Tensor) -> torch.Tensor:
         # pylint: disable=arguments-differ

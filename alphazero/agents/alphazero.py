@@ -19,14 +19,13 @@ class AlphaZeroArgMaxAgent(Agent):
                  config: Dict[str, Any]):
         super().__init__()
         self.game = game
-        self.state_encoder = state_encoder
         self.mcts = MonteCarloTreeSearch(game=game,
                                          state_encoder=state_encoder,
                                          nn=nn,
                                          config=config)
 
     def select_move(self, state: GameState) -> Move:
-        policy = self.mcts.get_policy(state)
+        policy = self.mcts.get_policy(state, temperature=0)
         return self.game.index_to_move(np.argmax(policy).item())
 
 
@@ -38,13 +37,12 @@ class AlphaZeroSampleAgent(Agent):
                  config: Dict[str, Any]):
         super().__init__()
         self.game = game
-        self.state_encoder = state_encoder
         self.mcts = MonteCarloTreeSearch(game=game,
                                          state_encoder=state_encoder,
                                          nn=nn,
                                          config=config)
 
     def select_move(self, state: GameState) -> Move:
-        policy = self.mcts.get_policy(state)
+        policy = self.mcts.get_policy(state, temperature=0)
         move_index = np.random.choice(self.game.action_space_size, p=policy)
         return self.game.index_to_move(move_index)
