@@ -10,6 +10,7 @@ nn_update_num_games: 50
 temperature_threshold: 6
 train_example_num_iters: 20
 patience: 10
+play_temperature: 1
 
 # MCTS config
 num_simulations: 25

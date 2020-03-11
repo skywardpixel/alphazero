@@ -31,11 +31,20 @@ class AlphaZeroSampleAgent(Agent):
         return self.game.index_to_move(move_index)
 
 
-class AlphaZeroArgMaxAgent(AlphaZeroSampleAgent):
+class AlphaZeroArgMaxAgent(Agent):
     def __init__(self,
                  game: Game,
                  state_encoder: GameStateEncoder,
                  nn: torch.nn.Module,
                  config: Dict[str, Any]) -> None:
-        super().__init__(game, state_encoder, nn, config)
-        self.temperature = 0
+        super().__init__()
+        self.game = game
+        self.mcts = MonteCarloTreeSearch(game=game,
+                                         state_encoder=state_encoder,
+                                         nn=nn,
+                                         config=config)
+
+    def select_move(self, state: GameState) -> Move:
+        policy = self.mcts.get_policy(state, temperature=0)
+        move_index = np.random.choice(self.game.action_space_size, p=policy)
+        return self.game.index_to_move(move_index)

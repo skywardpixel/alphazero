@@ -1,4 +1,5 @@
 import logging
+import random
 import sys
 
 import torch
@@ -6,7 +7,7 @@ import yaml
 
 from alphazero.agents.alphazero import AlphaZeroArgMaxAgent
 from alphazero.alphazero.mcts import MonteCarloTreeSearch
-from alphazero.alphazero.nn_modules.nets import dual_resnet, simple_conv_fc_net
+from alphazero.alphazero.nn_modules.nets import dual_resnet
 from alphazero.alphazero.state_encoders.ttt_state_encoder import TicTacToeStateEncoder
 from alphazero.games.tictactoe import TicTacToeGame, TicTacToePlayer, TicTacToeMove
 
@@ -40,10 +41,12 @@ if __name__ == '__main__':
     net.eval()
     agent = AlphaZeroArgMaxAgent(game, state_encoder, net, config)
 
+    agent_role = random.choice([TicTacToePlayer.X, TicTacToePlayer.O])
+
     while not game.is_over:
         game.show_board()
         # print(f"current state score by eval func: {agent.eval_fn(game.state, agent.player)}")
-        if game.current_player == TicTacToePlayer.O:
+        if game.current_player == agent_role:
             move = read_move(game.current_player)
             while not game.state.is_legal_move(move):
                 print("Illegal move, try again")

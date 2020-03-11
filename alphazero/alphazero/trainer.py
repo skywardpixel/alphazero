@@ -10,7 +10,7 @@ from torch import nn
 from alphazero.agents.alphazero import AlphaZeroSampleAgent
 from alphazero.alphazero.mcts import MonteCarloTreeSearch
 from alphazero.alphazero.types import TrainExample
-from alphazero.games import Game, Player
+from alphazero.games import Game
 from .nn_trainer import NeuralNetTrainer
 from .state_encoders import GameStateEncoder, torch
 
@@ -27,16 +27,13 @@ class AlphaZeroTrainer:
         self.state_encoder = state_encoder
         self.mcts = mcts
         self.config = config
+        self.nn_trainer = NeuralNetTrainer(self.mcts.nn, self.config)
 
     def train(self):
-        # pylint: disable=too-many-locals
         self.mcts.nn.eval()
-        patience = self.config['patience']
-        log_dir = self.config['log_dir']
-        nn_updated = [True] * patience
-        torch.save(self.mcts.nn.state_dict(), f'{log_dir}/best.pth')
-
-        train_examples_history = []
+        nn_update_history = [True] * self.config['patience']
+        self._save_nn(self.mcts.nn, 'best.pth')
+        train_examples_history: List[List[TrainExample]] = []
         for i in range(self.config['num_iters']):
             logger.info('BEGIN Iteration %d/%d', i + 1, self.config['num_iters'])
             examples_iter: List[TrainExample] = []
@@ -57,39 +54,13 @@ class AlphaZeroTrainer:
             random.shuffle(train_examples)
             logger.info('Training NN with %d examples', len(train_examples))
 
-            # save old NN
-            self.save_nn(self.mcts.nn, 'temp.pth')
+            updated = self._update_nn(train_examples, i + 1)
+            nn_update_history.append(updated)
 
-            # train self.mcts.nn
-            nn_trainer = NeuralNetTrainer(self.mcts.nn, self.config)
-            nn_trainer.train(train_examples, i + 1)
-            logger.info('NN training finished, now pitting old NN and new NN')
-
-            nn_new = self.mcts.nn
-            nn_old = copy.deepcopy(self.mcts.nn)
-            self.load_nn(nn_old, 'temp.pth')
-            # logger.debug('nn_old %s', nn_old.state_dict()['_encoder.conv_in.weight'].flatten()[0])
-            # logger.debug('nn_new %s', nn_new.state_dict()['_encoder.conv_in.weight'].flatten()[0])
-
-            pit_num_games = self.config['nn_update_num_games']
-            old_wins, new_wins, ties = self._compare_nn(nn_old, nn_new, pit_num_games, i + 1)
-            logger.info('Result: old_wins: %d, new_wins: %d, ties: %d, total: %d',
-                        old_wins, new_wins, ties, pit_num_games)
-
-            update_threshold = self.config['nn_update_threshold']
-            if old_wins + new_wins != 0 \
-                    and new_wins / (old_wins + new_wins) >= update_threshold:
-                logger.info('Switching to new NN')
-                self.save_nn(self.mcts.nn, 'best.pth')
-                nn_updated.append(True)
-            else:
-                logger.info('Keeping old NN')
-                self.load_nn(self.mcts.nn, 'temp.pth')
-                nn_updated.append(False)
-
-            if not any(nn_updated[-patience:]):
+            if not any(nn_update_history[-self.config['patience']:]):
                 # end training early if NN is not updated for over patience iterations
-                logger.info('NN not updated for %d iters, stopping early', patience)
+                logger.warning('NN not updated for %d iters, stopping early',
+                               self.config['patience'])
                 break
 
             logger.info('END Iteration %d/%d', i + 1, self.config['num_iters'])
@@ -109,43 +80,87 @@ class AlphaZeroTrainer:
             temperature = 1 if game_step < self.config['temperature_threshold'] else 0
             pi = self.mcts.get_policy(canonical_state, temperature)
             temp_examples.append((canonical_state, pi, self.game.current_player))
-            move_index = np.random.choice(self.game.action_space_size, p=pi)
-            move = self.game.index_to_move(move_index)
+            move = self.game.index_to_move(np.random.choice(self.game.action_space_size, p=pi))
             self.game.play(move)
             game_step += 1
 
         if self.game.winner is None:
-            logger.info('Iter %2d Ep %2d - Result: tie', iteration, episode)
+            logger.info('Iter %2d Ep %2d - Result: tie',
+                        iteration, episode)
         else:
-            logger.info('Iter %2d Ep %2d - Result: %s wins', iteration, episode, self.game.winner)
+            logger.info('Iter %2d Ep %2d - Result: %s wins',
+                        iteration, episode, self.game.winner)
 
-        def compute_z(player: Player):
+        # transform to tensors for nn training
+        # pylint: disable=not-callable
+        examples = []
+        for s, pi, player in temp_examples:
+            encoded_state = self.state_encoder.encode(s)
             if self.game.winner is None:
                 z = 0.
             else:
                 z = +1. if player == self.game.winner else -1.
-            return z
+            examples.append((encoded_state,
+                             torch.tensor(pi).float(),
+                             z))
 
-        # transform to tensors for nn training
-        # pylint: disable=not-callable
+        examples = self._augment_examples(examples)
+        return examples
 
-        # examples = [(self.state_encoder.encode(s), torch.tensor(pi).float(), compute_z(p))
-        #             for s, pi, p in temp_examples]
+    def _augment_examples(self, examples: List[TrainExample]) -> List[TrainExample]:
+        augmented = []
+        for s, pi, z in examples:
+            augmented.extend([(ss, spi, z) for ss, spi in self.game.symmetries(s, pi)])
+        return augmented
 
-        augmented_examples = []
-        for s, pi, player in temp_examples:
-            encoded_state = self.state_encoder.encode(s)
-            for sym_state, sym_policy in self.game.symmetries(encoded_state, pi):
-                augmented_examples.append((sym_state,
-                                           torch.tensor(sym_policy).float(),
-                                           compute_z(player)))
+    def _update_nn(self,
+                   train_data: List[TrainExample],
+                   iteration: int,
+                   compare: bool = True) -> bool:
+        """
+        Train the current NN on train_data, and updates it to
+        the new one if compare is true, or the new NN defeats
+        the old NN frequently enough.
 
-        return augmented_examples
+        Return true iff the NN is updated.
+        """
+        if not compare:
+            self.nn_trainer.train(train_data, iteration)
+            self._save_nn(self.mcts.nn, f'iter{iteration}.pth')
+            logger.info('NN training finished')
+            return True
+
+        # save old NN
+        self._save_nn(self.mcts.nn, 'temp.pth')
+
+        # train self.mcts.nn
+        self.nn_trainer.train(train_data, iteration)
+        logger.info('NN training finished, now pitting old NN and new NN')
+
+        nn_old = copy.deepcopy(self.mcts.nn)
+        self._load_nn(nn_old, 'temp.pth')
+
+        old_wins, new_wins, ties = self._compare_nn(nn_old, self.mcts.nn, iteration)
+
+        logger.info('Result: old_wins: %d, new_wins: %d, ties: %d, total: %d',
+                    old_wins, new_wins, ties, self.config['nn_update_num_games'])
+
+        update_threshold = self.config['nn_update_threshold']
+        if old_wins + new_wins != 0 \
+                and new_wins / (old_wins + new_wins) >= update_threshold:
+            logger.info('Switching to new NN')
+            self._save_nn(self.mcts.nn, 'best.pth')
+            self._save_nn(self.mcts.nn, f'iter{iteration}.pth')
+            return True
+        else:
+            logger.info('Keeping old NN')
+            self._load_nn(self.mcts.nn, 'temp.pth')
+            self._save_nn(self.mcts.nn, f'iter{iteration}.pth')
+            return False
 
     def _compare_nn(self,
                     nn_old: nn.Module,
                     nn_new: nn.Module,
-                    num_games: int,
                     iteration: int) -> Tuple[int, int, int]:
         """
         Let nn_old and nn_new compete, and returns the results of the games.
@@ -153,6 +168,7 @@ class AlphaZeroTrainer:
         nn_old.eval()
         nn_new.eval()
         old_wins, new_wins, ties = 0, 0, 0
+        num_games = self.config['nn_update_num_games']
         for g in range(num_games):
             self.game.reset()
             agent_old = AlphaZeroSampleAgent(self.game, self.state_encoder, nn_old, self.config)
@@ -167,7 +183,8 @@ class AlphaZeroTrainer:
                 current_player = agent_old if current_player == agent_new else agent_new
 
             if self.game.winner is None:
-                logger.info('Iter %2d Game %2d/%2d - Result: tie', iteration, g + 1, num_games)
+                logger.info('Iter %2d Game %2d/%2d - Result: tie',
+                            iteration, g + 1, self.config['nn_update_num_games'])
                 ties += 1
             else:
                 if self.game.winner == self.game.canonical_player:
@@ -183,8 +200,8 @@ class AlphaZeroTrainer:
                     new_wins += 1
         return old_wins, new_wins, ties
 
-    def save_nn(self, net: nn.Module, filename: str) -> None:
+    def _save_nn(self, net: nn.Module, filename: str) -> None:
         torch.save(net.state_dict(), os.path.join(self.config['log_dir'], filename))
 
-    def load_nn(self, net: nn.Module, filename: str) -> None:
+    def _load_nn(self, net: nn.Module, filename: str) -> None:
         net.load_state_dict(torch.load(os.path.join(self.config['log_dir'], filename)))
