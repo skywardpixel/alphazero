@@ -9,6 +9,7 @@ nn_update_threshold: 0.55
 nn_update_num_games: 50
 temperature_threshold: 6
 train_example_num_iters: 20
+patience: 10
 
 # MCTS config
 num_simulations: 25
@@ -21,7 +22,6 @@ momentum: 0.8
 batch_size: 64
 weight_decay: 0.01
 max_epochs: 10
-patience: 10
 
 # NN config
 num_resnet_filters: 256

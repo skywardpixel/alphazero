@@ -58,15 +58,15 @@ class NeuralNetTrainer:
         def log_epoch_training_results(engine):  # pylint: disable=unused-argument
             evaluator.run(data_loader)
             metrics = evaluator.state.metrics
-            logger.info("Training Results - Epoch: {}  Avg loss: {:.2f}"
-                        .format(trainer.state.epoch, metrics['loss']))
+            logger.info("Iter %2d Training Results - Epoch: %2d  Avg loss: %.2f",
+                        iteration + 1, trainer.state.epoch, metrics['loss'])
 
         @trainer.on(Events.COMPLETED)
         def log_iteration_training_results(engine):  # pylint: disable=unused-argument
             evaluator.run(data_loader)
             metrics = evaluator.state.metrics
-            logger.info("Iteration Training Results - Avg loss: {:.2f}"
-                        .format(metrics['loss']))
+            logger.info("Iter %2d Training Results - Avg loss: %.2f",
+                        iteration + 1, metrics['loss'])
             self.writer.add_scalar("train/loss", metrics['loss'], iteration)
 
         trainer.run(data_loader, max_epochs=self.max_epochs)

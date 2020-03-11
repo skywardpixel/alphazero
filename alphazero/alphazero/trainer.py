@@ -1,5 +1,6 @@
 import copy
 import logging
+import os
 import random
 from typing import List, Any, Dict, Tuple
 
@@ -37,10 +38,9 @@ class AlphaZeroTrainer:
 
         train_examples_history = []
         for i in range(self.config['num_iters']):
-            logger.info('Iteration %d/%d', i + 1, self.config['num_iters'])
+            logger.info('BEGIN Iteration %d/%d', i + 1, self.config['num_iters'])
             examples_iter: List[TrainExample] = []
             for ep in range(self.config['num_episodes']):
-                self.mcts.reset()
                 examples_ep = self.run_episode(i + 1, ep + 1)
                 examples_iter.extend(examples_ep)
             logger.info('Finished collecting data, training NN')
@@ -57,16 +57,19 @@ class AlphaZeroTrainer:
             random.shuffle(train_examples)
             logger.info('Training NN with %d examples', len(train_examples))
 
-            torch.save(self.mcts.nn.state_dict(), f'{log_dir}/temp.pth')
+            # save old NN
+            self.save_nn(self.mcts.nn, 'temp.pth')
+
+            # train self.mcts.nn
             nn_trainer = NeuralNetTrainer(self.mcts.nn, self.config)
             nn_trainer.train(train_examples, i + 1)
-
             logger.info('NN training finished, now pitting old NN and new NN')
+
             nn_new = self.mcts.nn
             nn_old = copy.deepcopy(self.mcts.nn)
-            nn_old.load_state_dict(torch.load(f'{log_dir}/temp.pth'))
-            nn_new.eval()
-            nn_old.eval()
+            self.load_nn(nn_old, 'temp.pth')
+            # logger.debug('nn_old %s', nn_old.state_dict()['_encoder.conv_in.weight'].flatten()[0])
+            # logger.debug('nn_new %s', nn_new.state_dict()['_encoder.conv_in.weight'].flatten()[0])
 
             pit_num_games = self.config['nn_update_num_games']
             old_wins, new_wins, ties = self._compare_nn(nn_old, nn_new, pit_num_games, i + 1)
@@ -77,11 +80,11 @@ class AlphaZeroTrainer:
             if old_wins + new_wins != 0 \
                     and new_wins / (old_wins + new_wins) >= update_threshold:
                 logger.info('Switching to new NN')
-                torch.save(self.mcts.nn.state_dict(), f'{log_dir}/best.pth')
+                self.save_nn(self.mcts.nn, 'best.pth')
                 nn_updated.append(True)
             else:
                 logger.info('Keeping old NN')
-                self.mcts.nn = nn_old
+                self.load_nn(self.mcts.nn, 'temp.pth')
                 nn_updated.append(False)
 
             if not any(nn_updated[-patience:]):
@@ -89,12 +92,15 @@ class AlphaZeroTrainer:
                 logger.info('NN not updated for %d iters, stopping early', patience)
                 break
 
+            logger.info('END Iteration %d/%d', i + 1, self.config['num_iters'])
+
     def run_episode(self, iteration: int, episode: int) -> List[TrainExample]:
         """
         Run an episode (full game of self-play) from the initial state
         and collect train examples throughout the game.
         """
         self.game.reset()
+        self.mcts.reset()
         temp_examples = []  # (s_t, pi_t, player) triples
 
         game_step = 0
@@ -130,7 +136,9 @@ class AlphaZeroTrainer:
         for s, pi, player in temp_examples:
             encoded_state = self.state_encoder.encode(s)
             for sym_state, sym_policy in self.game.symmetries(encoded_state, pi):
-                augmented_examples.append((sym_state, torch.tensor(pi).float(), compute_z(player)))
+                augmented_examples.append((sym_state,
+                                           torch.tensor(sym_policy).float(),
+                                           compute_z(player)))
 
         return augmented_examples
 
@@ -159,7 +167,7 @@ class AlphaZeroTrainer:
                 current_player = agent_old if current_player == agent_new else agent_new
 
             if self.game.winner is None:
-                logger.info('Iter %2d Game %d/%d - Result: tie', iteration, g + 1, num_games)
+                logger.info('Iter %2d Game %2d/%2d - Result: tie', iteration, g + 1, num_games)
                 ties += 1
             else:
                 if self.game.winner == self.game.canonical_player:
@@ -167,10 +175,16 @@ class AlphaZeroTrainer:
                     winner = 'old' if g % 2 == 0 else 'new'
                 else:
                     winner = 'new' if g % 2 == 0 else 'old'
-                logger.info('Iter %2d Game %d/%d - Result: %s (%s) wins',
+                logger.info('Iter %2d Game %2d/%2d - Result: %s (%s) wins',
                             iteration, g + 1, num_games, self.game.winner, winner)
                 if winner == 'old':
                     old_wins += 1
                 else:
                     new_wins += 1
         return old_wins, new_wins, ties
+
+    def save_nn(self, net: nn.Module, filename: str) -> None:
+        torch.save(net.state_dict(), os.path.join(self.config['log_dir'], filename))
+
+    def load_nn(self, net: nn.Module, filename: str) -> None:
+        net.load_state_dict(torch.load(os.path.join(self.config['log_dir'], filename)))

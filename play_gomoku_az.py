@@ -6,10 +6,7 @@ import yaml
 
 from alphazero.agents.alphazero import AlphaZeroArgMaxAgent
 from alphazero.alphazero.mcts import MonteCarloTreeSearch
-from alphazero.alphazero.nn_modules import AlphaZeroNeuralNet
-from alphazero.alphazero.nn_modules.encoders import SimpleConvNetEncoder
-from alphazero.alphazero.nn_modules.policy_heads import SimpleFullyConnectedPolicyHead
-from alphazero.alphazero.nn_modules.value_heads import SimpleFullyConnectedValueHead
+from alphazero.alphazero.nn_modules.nets import dual_resnet
 from alphazero.alphazero.state_encoders.gomoku_state_encoder import GomokuStateEncoder
 from alphazero.games.gomoku import GomokuGame, GomokuPlayer, GomokuMove
 
@@ -33,15 +30,7 @@ if __name__ == '__main__':
     game = GomokuGame(config['game_size'])
     state_encoder = GomokuStateEncoder(config)
 
-    # encoder = LinearEncoder(config)
-    # value_head = LinearValueHead(config)
-    # policy_head = LinearPolicyHead(game.action_space_size, config)
-
-    encoder = SimpleConvNetEncoder(config)
-    value_head = SimpleFullyConnectedValueHead(config)
-    policy_head = SimpleFullyConnectedPolicyHead(game.action_space_size, config)
-
-    net = AlphaZeroNeuralNet(encoder, policy_head, value_head, config)
+    net = dual_resnet(game, config)
     mcts = MonteCarloTreeSearch(game=game,
                                 state_encoder=state_encoder,
                                 nn=net,
