@@ -71,7 +71,7 @@ class GomokuGame(Game[GomokuGameState, GomokuMove, GomokuPlayer]):
         return result
 
     def _flip(self, state: torch.Tensor, policy: np.ndarray) -> Tuple[torch.Tensor, np.ndarray]:
-        flipped_state = torch.flip(state, [0, 2])
+        flipped_state = torch.flip(state, [2])
         flipped_policy = np.zeros_like(policy)
         for idx, prob in enumerate(policy):
             old_move = self.index_to_move(idx)

@@ -10,10 +10,19 @@ from alphazero.games.gomoku.board import GomokuBoard
 class GomokuStateEncoder(GameStateEncoder[GomokuGameState]):
     def __init__(self, config: Dict[str, Any]) -> None:
         super().__init__()
+        self.num_history = config['num_history']
         self.device = config['device']
 
     def encode(self, state: GomokuGameState) -> torch.Tensor:
-        history = [_board_to_matrix(state.board)]
+        board_size = state.board.size
+        history = []
+        h = state
+        for _ in range(self.num_history):
+            if h is None:
+                history.append(torch.zeros([board_size, board_size]))
+                continue
+            history.append(_board_to_matrix(h.board))
+            h = h.previous_state
         return torch.stack(history, dim=0).to(self.device)
 
 

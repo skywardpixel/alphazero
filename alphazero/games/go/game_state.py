@@ -13,8 +13,8 @@ class GoGameState(GameState[GoMove, GoPlayer, GoBoard]):
     def __init__(self,
                  board: GoBoard,
                  player: GoPlayer,
-                 previous_state: Optional['GoGameState'],
-                 last_move: Optional[GoMove]) -> None:
+                 previous_state: Optional['GoGameState'] = None,
+                 last_move: Optional[GoMove] = None) -> None:
         super().__init__()
         self._board = board
         self._player = player
@@ -38,7 +38,7 @@ class GoGameState(GameState[GoMove, GoPlayer, GoBoard]):
 
     @classmethod
     def get_initial_state(cls, size: int = 9) -> 'GoGameState':
-        return cls(GoBoard(size), GoPlayer.BLACK, None, None)
+        return cls(GoBoard(size), GoPlayer.BLACK)
 
     @property
     def current_player(self) -> Player:

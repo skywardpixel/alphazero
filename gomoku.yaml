@@ -1,6 +1,6 @@
 # game config
 game_size: 9
-num_history: 1
+num_history: 3
 
 # trainer config
 num_iters: 25

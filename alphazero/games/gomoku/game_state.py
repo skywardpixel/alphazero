@@ -9,10 +9,16 @@ from .player import GomokuPlayer
 
 class GomokuGameState(GameState[GomokuMove, GomokuPlayer, GomokuBoard]):
 
-    def __init__(self, board: GomokuBoard, player: GomokuPlayer) -> None:
+    def __init__(self,
+                 board: GomokuBoard,
+                 player: GomokuPlayer,
+                 previous_state: Optional['GomokuGameState'] = None,
+                 last_move: Optional[GomokuMove] = None) -> None:
         super().__init__()
         self._board = board
         self._player = player
+        self.previous_state = previous_state
+        self.last_move = last_move
 
     @property
     def player(self) -> GomokuPlayer:
@@ -35,7 +41,7 @@ class GomokuGameState(GameState[GomokuMove, GomokuPlayer, GomokuBoard]):
             raise IllegalGomokuMoveException("Game has ended.")
         next_board = self.board.copy()
         next_board.apply_move(self.player, move)
-        return GomokuGameState(next_board, self.player.opponent)
+        return GomokuGameState(next_board, self.player.opponent, self, move)
 
     def get_legal_moves(self) -> List[GomokuMove]:
         return self.board.get_legal_moves()
