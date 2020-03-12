@@ -3,6 +3,7 @@ from collections import defaultdict
 from typing import List, Dict, Tuple, Any
 
 import numpy as np
+import torch
 
 from alphazero.alphazero.nn_modules import AlphaZeroNeuralNet
 from alphazero.alphazero.state_encoders.state_encoder import GameStateEncoder
@@ -38,6 +39,8 @@ class MonteCarloTreeSearch:
         self.Ns: Dict[State, int] = defaultdict(int)
         # p(s) initial policies for state, returned by NN
         self.Ps: Dict[State, np.ndarray] = dict()
+        # V(s) cached valid move vector for state
+        self.Vs: Dict[State, np.ndarray] = dict()
 
     def get_policy(self, state: GameState, temperature: float = 1) -> List[float]:
         """
@@ -86,15 +89,16 @@ class MonteCarloTreeSearch:
             # new leaf node
             # use neural net to predict current policy and value
             encoded_state = self.state_encoder.encode(state)
-            policy, value = self.nn(encoded_state.unsqueeze(0))
-
-            # squeeze to remove 0th dim (batch)
-            self.Ps[s] = np.exp(policy.detach().cpu().squeeze().numpy())
-            v = value.detach().cpu().squeeze().numpy()
+            with torch.no_grad():
+                policy, value = self.nn(encoded_state.unsqueeze(0))
+                # squeeze to remove 0th dim (batch)
+                self.Ps[s] = np.exp(policy.detach().cpu().squeeze().numpy())
+                v = value.detach().cpu().squeeze().numpy()
 
             # normalize policy
             legal_moves = state.get_legal_moves()
             legal_vector = self._moves_to_vector(legal_moves)
+            self.Vs[s] = legal_vector
             self.Ps[s] *= legal_vector
             sum_Ps = np.sum(self.Ps[s])
             if sum_Ps > 0:
@@ -105,19 +109,18 @@ class MonteCarloTreeSearch:
                 self.Ps[s] += legal_vector
                 sum_Ps = np.sum(self.Ps[s])
                 self.Ps[s] /= sum_Ps
-
             return -v
 
         # choose next state by U(s, a), recurse
         c_puct = self.config['c_puct']
-        max_u, best_move = float('-inf'), None
-        for move in state.get_legal_moves():
-            a = self.game.move_to_index(move)
-            u = self.Qsa[(s, a)] + \
-                c_puct * self.Ps[s][a] * np.sqrt(self.Ns[s]) / (1 + self.Nsa[(s, a)])
-            if u > max_u:
-                max_u, best_move = u, move
-        move = best_move
+        max_u, best_a = float('-inf'), -1
+        for a, valid in enumerate(self.Vs[s]):
+            if valid:
+                u = self.Qsa[(s, a)] + \
+                    c_puct * self.Ps[s][a] * np.sqrt(self.Ns[s]) / (1 + self.Nsa[(s, a)])
+                if u > max_u:
+                    max_u, best_a = u, a
+        move = self.game.index_to_move(best_a)
         ns = state.next(move)
         nv = self.search(ns)
 
@@ -146,3 +149,4 @@ class MonteCarloTreeSearch:
         self.Ps.clear()
         self.Nsa.clear()
         self.Ns.clear()
+        self.Vs.clear()

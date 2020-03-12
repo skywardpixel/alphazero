@@ -3,7 +3,7 @@ game_size: 9
 num_history: 3
 
 # trainer config
-num_iters: 25
+num_iters: 200
 num_episodes: 50
 nn_update_threshold: 0.55
 nn_update_num_games: 40
