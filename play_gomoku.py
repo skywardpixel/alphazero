@@ -18,24 +18,29 @@ def read_move(player: GomokuPlayer) -> GomokuMove:
     return GomokuMove(x, y)
 
 
-game = GomokuGame(9, 5)
+game = GomokuGame(7, 5)
 agent = AlphaBetaAgent(GomokuPlayer.WHITE, depth=2, eval_fn=simple_eval_func)
 
 while not game.is_over:
     clear()
     game.show_board()
     # print(f"current state score by eval func: {agent.eval_fn(game.state, agent.player)}")
-    if game.current_player == GomokuPlayer.BLACK:
+    move = read_move(game.current_player)
+    while not game.state.is_legal_move(move):
+        print('Illegal move, try again')
         move = read_move(game.current_player)
-        while not game.state.is_legal_move(move):
-            print('Illegal move, try again')
-            move = read_move(game.current_player)
-        clear()
-    else:
-        print(f"legal moves: {', '.join([str(m) for m in game.state.get_legal_moves()])}")
-        move = agent.select_move(game.state)
-        clear()
-        print(f'Agent WHITE move: {move}')
+    clear()
+    # if game.current_player == GomokuPlayer.BLACK:
+    #     move = read_move(game.current_player)
+    #     while not game.state.is_legal_move(move):
+    #         print('Illegal move, try again')
+    #         move = read_move(game.current_player)
+    #     clear()
+    # else:
+    #     print(f"legal moves: {', '.join([str(m) for m in game.state.get_legal_moves()])}")
+    #     move = agent.select_move(game.state)
+    #     clear()
+    #     print(f'Agent WHITE move: {move}')
     game.play(move)
 
 print('--- GAME OVER ---')

@@ -35,7 +35,7 @@ class GomokuTestCase(unittest.TestCase):
                 [700, 800, 900],
             ],
         ])
-        policy = np.array([
+        policy = torch.tensor([
             11, 22, 33,
             44, 55, 66,
             77, 88, 99,

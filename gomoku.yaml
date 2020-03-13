@@ -1,6 +1,6 @@
 # game config
 game_size: 7
-num_history: 1
+num_history: 3
 
 # trainer config
 num_iters: 200
@@ -26,6 +26,7 @@ weight_decay: 0.0001
 max_epochs: 15
 
 # NN config
+nn_arch: resnet
 num_resnet_filters: 256
 num_res_blocks: 8
 value_head_hidden_dim: 256

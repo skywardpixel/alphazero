@@ -77,7 +77,7 @@ class GomokuBoard(Board):
             if i < self.size:
                 # below major diagonal, r - c = size - 1 - i
                 # r_first = size - 1 - i, r_last = size - 1
-                diagonal = [self.get(r, r - i)
+                diagonal = [self.get(r, r + i + 1 - self.size)
                             for r in range(self.size - 1 - i, self.size)]
             else:
                 # above major diagonal, c - r = i - size + 1
