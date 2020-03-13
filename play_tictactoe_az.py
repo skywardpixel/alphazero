@@ -37,7 +37,7 @@ if __name__ == '__main__':
                                 nn=net,
                                 config=config)
 
-    net.load_state_dict(torch.load('./tmp/ttt/best.pth'))
+    net.load_state_dict(torch.load(f"{config['log_dir']}/best.pth"))
     net.eval()
     agent = AlphaZeroArgMaxAgent(game, state_encoder, net, config)
 
