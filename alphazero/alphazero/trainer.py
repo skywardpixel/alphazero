@@ -54,7 +54,7 @@ class AlphaZeroTrainer:
             random.shuffle(train_examples)
             logger.info('Training NN with %d examples', len(train_examples))
 
-            updated = self._update_nn(train_examples, i + 1)
+            updated = self._update_nn(train_examples, i + 1, compare=self.config['compare_nn'])
             nn_update_history.append(updated)
 
             if not any(nn_update_history[-self.config['patience']:]):

@@ -5,6 +5,7 @@ num_history: 3
 # trainer config
 num_iters: 200
 num_episodes: 50
+compare_nn: false
 nn_update_threshold: 0.55
 nn_update_num_games: 40
 temperature_threshold: 15
