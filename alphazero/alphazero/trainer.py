@@ -85,8 +85,7 @@ class AlphaZeroTrainer:
             game_step += 1
 
         if self.game.winner is None:
-            logger.info('Iter %2d Ep %2d - Result: tie',
-                        iteration, episode)
+            logger.info('Iter %2d Ep %2d - Result: tie', iteration, episode)
         else:
             logger.info('Iter %2d Ep %2d - Result: %s wins',
                         iteration, episode, self.game.winner)

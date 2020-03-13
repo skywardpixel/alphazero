@@ -1,6 +1,5 @@
 from typing import Tuple, List
 
-import numpy as np
 import torch
 
 from alphazero.games.game import Game
@@ -63,12 +62,12 @@ class GoGame(Game[GoGameState, GoMove, GoPlayer]):
         y = index % self.size
         return GoMove.play(x, y)
 
-    def symmetries(self, state: torch.Tensor, policy: np.ndarray) \
-            -> List[Tuple[torch.Tensor, np.ndarray]]:
+    def symmetries(self, state: torch.Tensor, policy: torch.Tensor) \
+            -> List[Tuple[torch.Tensor, torch.Tensor]]:
         result = []
         for k in range(4):
             rotated_state = torch.rot90(state, k, [2, 1])
-            rotated_policy = np.zeros_like(policy)
+            rotated_policy = torch.zeros_like(policy)
             for idx, prob in enumerate(policy):
                 old_move = self.index_to_move(idx)
                 rotated_move = self._rotate_move(old_move, k)
@@ -78,9 +77,10 @@ class GoGame(Game[GoGameState, GoMove, GoPlayer]):
             result.append(self._flip(rotated_state, rotated_policy))
         return result
 
-    def _flip(self, state: torch.Tensor, policy: np.ndarray) -> Tuple[torch.Tensor, np.ndarray]:
+    def _flip(self, state: torch.Tensor, policy: torch.Tensor) \
+            -> Tuple[torch.Tensor, torch.Tensor]:
         flipped_state = torch.flip(state, [2])
-        flipped_policy = np.zeros_like(policy)
+        flipped_policy = torch.zeros_like(policy)
         for idx, prob in enumerate(policy):
             old_move = self.index_to_move(idx)
             flipped_move = self._flip_move_y(old_move)

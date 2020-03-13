@@ -61,7 +61,8 @@ class Game(Generic[S, M, P]):
         """
         raise NotImplementedError
 
-    def symmetries(self, state: torch.Tensor, policy: List[float]) -> List[Tuple[torch.Tensor, List[float]]]:
+    def symmetries(self, state: torch.Tensor, policy: torch.Tensor) \
+            -> List[Tuple[torch.Tensor, torch.Tensor]]:
         """
         Used by AlphaZero to augment training data.
         Probably shouldn't be here, putting here to utilize Game's knowledge

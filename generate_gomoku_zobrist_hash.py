@@ -3,7 +3,7 @@ import random
 from alphazero.games.gomoku.player import GomokuPlayer
 from alphazero.games.gomoku.move import GomokuMove
 
-SIZE = 9
+SIZE = 7
 
 
 def to_python(player_state):

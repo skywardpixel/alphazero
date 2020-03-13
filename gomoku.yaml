@@ -1,5 +1,5 @@
 # game config
-game_size: 9
+game_size: 7
 num_history: 3
 
 # trainer config
@@ -7,7 +7,7 @@ num_iters: 200
 num_episodes: 50
 nn_update_threshold: 0.55
 nn_update_num_games: 40
-temperature_threshold: 6
+temperature_threshold: 15
 train_example_num_iters: 20
 patience: 10
 play_temperature: 1
@@ -19,12 +19,12 @@ c_puct: 1.
 # NN trainer
 log_dir: ./tmp/gomoku/
 lr: 0.001
-momentum: 0.8
+momentum: 0.9
 batch_size: 64
-weight_decay: 0.01
-max_epochs: 10
+weight_decay: 0.0001
+max_epochs: 15
 
 # NN config
 num_resnet_filters: 256
-num_res_blocks: 4
+num_res_blocks: 8
 value_head_hidden_dim: 256
