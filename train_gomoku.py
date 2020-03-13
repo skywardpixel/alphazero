@@ -1,3 +1,4 @@
+import logging
 import pathlib
 
 import torch
@@ -16,8 +17,10 @@ with open('gomoku.yaml', 'r') as f:
 pathlib.Path(config['log_dir']).mkdir(parents=True, exist_ok=True)
 
 setup_logger(config['log_dir'], 'train.log')
+logger = logging.getLogger(__name__)
 
 config['device'] = 'cuda' if torch.cuda.is_available() else 'cpu'
+logger.info('** Training on %s **', config['device'])
 
 if __name__ == '__main__':
     game = GomokuGame(config['game_size'])

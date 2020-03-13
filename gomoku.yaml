@@ -18,7 +18,7 @@ num_simulations: 50
 c_puct: 1.
 
 # NN trainer
-log_dir: ./tmp/gomoku/
+log_dir: ./gomoku_logs/
 lr: 0.001
 momentum: 0.9
 batch_size: 64

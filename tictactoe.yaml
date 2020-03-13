@@ -18,7 +18,7 @@ num_simulations: 25
 c_puct: 1.
 
 # NN trainer
-log_dir: ./tmp/ttt/
+log_dir: ./tictactoe_logs/
 lr: 0.005
 momentum: 0.8
 batch_size: 64
