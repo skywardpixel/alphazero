@@ -1,7 +1,7 @@
 from typing import Callable
 
-from alphazero.agents.base import Agent
 from alphazero.games import GameState, Move, TypeVar, Player, Generic
+from .base import Agent
 
 S = TypeVar('S', bound=GameState)
 M = TypeVar('M', bound=Move)

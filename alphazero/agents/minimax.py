@@ -1,10 +1,10 @@
 import random
 from typing import Callable, TypeVar, Generic
 
-from alphazero.agents.base import Agent
 from alphazero.games.game_state import GameState
 from alphazero.games.move import Move
 from alphazero.games.player import Player
+from .base import Agent
 
 S = TypeVar('S', bound=GameState)
 M = TypeVar('M', bound=Move)

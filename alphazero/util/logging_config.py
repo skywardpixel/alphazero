@@ -4,7 +4,8 @@ import sys
 
 
 def setup_logger(log_dir, filename):
-    FORMAT = '%(asctime)s - %(name)-15s - %(levelname)s - %(message)s'
+    # FORMAT = '%(asctime)s - %(name)-15s - %(levelname)s - %(message)s'
+    FORMAT = '%(message)s'
     logging.basicConfig(level=logging.INFO,
                         format=FORMAT,
                         datefmt='%Y/%m/%d %H:%M:%S',
