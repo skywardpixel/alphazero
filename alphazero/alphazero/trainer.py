@@ -7,7 +7,7 @@ from typing import List, Any, Dict, Tuple
 import numpy as np
 from torch import nn
 
-from alphazero.agents.alphazero import AlphaZeroSampleAgent
+from alphazero.agents.alphazero import AlphaZeroArgMaxAgent
 from alphazero.alphazero.mcts import MonteCarloTreeSearch
 from alphazero.alphazero.types import TrainExample
 from alphazero.games import Game
@@ -170,8 +170,8 @@ class AlphaZeroTrainer:
         num_games = self.config['nn_update_num_games']
         for g in range(num_games):
             self.game.reset()
-            agent_old = AlphaZeroSampleAgent(self.game, self.state_encoder, nn_old, self.config)
-            agent_new = AlphaZeroSampleAgent(self.game, self.state_encoder, nn_new, self.config)
+            agent_old = AlphaZeroArgMaxAgent(self.game, self.state_encoder, nn_old, self.config)
+            agent_new = AlphaZeroArgMaxAgent(self.game, self.state_encoder, nn_new, self.config)
 
             # Let old start first for even-numbered games, new for odd-numbered games
             current_player = agent_old if g % 2 == 0 else agent_new
