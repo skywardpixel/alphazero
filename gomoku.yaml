@@ -1,6 +1,6 @@
 # game config
 game_size: 7
-num_history: 1
+num_history: 3
 
 # trainer config
 num_iters: 200
@@ -19,7 +19,7 @@ c_puct: 1.
 
 # NN trainer
 log_dir: ./gomoku_logs/
-lr: 0.0005
+lr: 0.001
 momentum: 0.9
 batch_size: 64
 weight_decay: 0.0001
@@ -28,5 +28,5 @@ max_epochs: 15
 # NN config
 nn_arch: dual_resnet
 num_resnet_filters: 256
-num_res_blocks: 4
+num_res_blocks: 8
 value_head_hidden_dim: 256

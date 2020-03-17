@@ -29,7 +29,7 @@ def read_move(player: GomokuPlayer) -> GomokuMove:
 
 if __name__ == '__main__':
     game = GomokuGame(config['game_size'])
-    state_encoder = GomokuStateEncoder(config)
+    state_encoder = GomokuStateEncoder(config['device'], num_history=config['num_history'])
 
     net = dual_resnet(game, config)
     mcts = MonteCarloTreeSearch(game=game,
@@ -37,7 +37,8 @@ if __name__ == '__main__':
                                 nn=net,
                                 config=config)
 
-    net.load_state_dict(torch.load(os.path.join(config['log_dir'], 'best.pth')))
+    # net.load_state_dict(torch.load(os.path.join(config['log_dir'], 'best.pth')))
+    net.load_state_dict(torch.load(os.path.join('pretrained', 'gomoku_playable.pth')))
     net.eval()
     agent = AlphaZeroArgMaxAgent(game, state_encoder, net, config)
 

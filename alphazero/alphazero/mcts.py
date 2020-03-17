@@ -92,12 +92,12 @@ class MonteCarloTreeSearch:
             return -v
 
         # choose next state by U(s, a), recurse
-        max_u, best_a = float('-inf'), -1
+        max_prob, best_a = float('-inf'), -1
         for a, valid in enumerate(self.Vs[s]):
             if valid:
-                u = self._compute_Usa(s, a)
-                if u > max_u:
-                    max_u, best_a = u, a
+                prob = self.Qsa[(s, a)] + self._compute_Usa(s, a)
+                if prob > max_prob:
+                    max_prob, best_a = prob, a
         move = self.game.index_to_move(best_a)
         ns = state.next(move)
         nv = self.search(ns)
@@ -128,7 +128,7 @@ class MonteCarloTreeSearch:
     def _compute_Usa(self, s: int, a: int) -> float:
         c_puct = self.config['c_puct']
         n_part = np.sqrt(self.Ns[s]) / (1 + self.Nsa[(s, a)])
-        return self.Qsa[(s, a)] + c_puct * self.Ps[s][a] * n_part
+        return c_puct * self.Ps[s][a] * n_part
 
     def _moves_to_vector(self, moves: List[Move]) -> np.ndarray:
         """

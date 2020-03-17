@@ -1,5 +1,3 @@
-from typing import Any, Dict
-
 import torch
 
 from alphazero.alphazero.state_encoders.state_encoder import GameStateEncoder
@@ -8,10 +6,10 @@ from alphazero.games.go.board import GoBoard
 
 
 class GoStateEncoder(GameStateEncoder[GoGameState]):
-    def __init__(self, config: Dict[str, Any]) -> None:
+    def __init__(self, device: str, num_history: int = 3) -> None:
         super().__init__()
-        self.num_history = config['num_history']
-        self.device = config['device']
+        self.num_history = num_history
+        self.device = device
 
     def encode(self, state: GoGameState) -> torch.Tensor:
         board_size = state.board.size

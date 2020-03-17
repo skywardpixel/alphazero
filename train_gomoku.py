@@ -1,5 +1,4 @@
 import logging
-import pathlib
 
 import torch
 import yaml
@@ -14,7 +13,7 @@ from alphazero.util.logging_config import setup_logger
 
 with open('gomoku.yaml', 'r') as f:
     config = yaml.safe_load(f)
-pathlib.Path(config['log_dir']).mkdir(parents=True, exist_ok=True)
+
 
 config['device'] = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -26,7 +25,7 @@ logger.info(config)
 
 if __name__ == '__main__':
     game = GomokuGame(config['game_size'])
-    state_encoder = GomokuStateEncoder(config)
+    state_encoder = GomokuStateEncoder(config['device'], config['num_history'])
 
     net = getattr(nets, config['nn_arch'])(game, config)
 

@@ -22,10 +22,12 @@
 #    machine: cpu
 #    mode: serve
 
-machine: gpu
+
 env: pytorch-1.4
 task:
   train_gomoku:
+    machine: gpu2
     command: python train_gomoku.py
   train_tictactoe:
+    machine: gpu
     command: python train_tictactoe.py

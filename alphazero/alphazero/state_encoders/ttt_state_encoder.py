@@ -1,5 +1,3 @@
-from typing import Any, Dict
-
 import torch
 
 from alphazero.alphazero.state_encoders.state_encoder import GameStateEncoder
@@ -8,9 +6,9 @@ from alphazero.games.tictactoe.board import TicTacToeBoard
 
 
 class TicTacToeStateEncoder(GameStateEncoder[TicTacToeGameState]):
-    def __init__(self, config: Dict[str, Any]) -> None:
+    def __init__(self, device: str) -> None:
         super().__init__()
-        self.device = config['device']
+        self.device = device
 
     def encode(self, state: TicTacToeGameState) -> torch.Tensor:
         history = [_board_to_matrix(state.board)]

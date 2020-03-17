@@ -30,6 +30,9 @@ class AlphaZeroSampleAgent(Agent):
         move_index = np.random.choice(self.game.action_space_size, p=policy)
         return self.game.index_to_move(move_index)
 
+    def reset(self) -> None:
+        self.mcts.reset()
+
 
 class AlphaZeroArgMaxAgent(Agent):
     def __init__(self,
@@ -48,3 +51,6 @@ class AlphaZeroArgMaxAgent(Agent):
         policy = self.mcts.get_policy(state, temperature=0)
         move_index = np.random.choice(self.game.action_space_size, p=policy)
         return self.game.index_to_move(move_index)
+
+    def reset(self) -> None:
+        self.mcts.reset()

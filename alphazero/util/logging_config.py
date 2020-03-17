@@ -1,10 +1,12 @@
 import logging
 import os
+import pathlib
 import sys
 
 
 def setup_logger(log_dir, filename):
     # FORMAT = '%(asctime)s - %(name)-15s - %(levelname)s - %(message)s'
+    pathlib.Path(log_dir).mkdir(parents=True, exist_ok=True)
     FORMAT = '%(message)s'
     logging.basicConfig(level=logging.INFO,
                         format=FORMAT,

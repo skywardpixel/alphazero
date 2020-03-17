@@ -13,6 +13,7 @@ from alphazero.alphazero.types import TrainExample
 from alphazero.games import Game
 from .nn_trainer import NeuralNetTrainer
 from .state_encoders import GameStateEncoder, torch
+from ..util.pit_agents import pit
 
 logger = logging.getLogger(__name__)
 
@@ -139,7 +140,7 @@ class AlphaZeroTrainer:
         nn_old = copy.deepcopy(self.mcts.nn)
         self._load_nn(nn_old, 'temp.pth')
 
-        old_wins, new_wins, ties = self._compare_nn(nn_old, self.mcts.nn, iteration)
+        old_wins, new_wins, ties = self._compare_nn(nn_old, self.mcts.nn)
 
         logger.info('Result: old_wins: %d, new_wins: %d, ties: %d, total: %d',
                     old_wins, new_wins, ties, self.config['nn_update_num_games'])
@@ -159,45 +160,16 @@ class AlphaZeroTrainer:
 
     def _compare_nn(self,
                     nn_old: nn.Module,
-                    nn_new: nn.Module,
-                    iteration: int) -> Tuple[int, int, int]:
+                    nn_new: nn.Module) -> Tuple[int, int, int]:
         """
         Let nn_old and nn_new compete, and returns the results of the games.
         """
         nn_old.eval()
         nn_new.eval()
-        old_wins, new_wins, ties = 0, 0, 0
-        num_games = self.config['nn_update_num_games']
-        for g in range(num_games):
-            self.game.reset()
-            agent_old = AlphaZeroArgMaxAgent(self.game, self.state_encoder, nn_old, self.config)
-            agent_new = AlphaZeroArgMaxAgent(self.game, self.state_encoder, nn_new, self.config)
-
-            # Let old start first for even-numbered games, new for odd-numbered games
-            current_player = agent_old if g % 2 == 0 else agent_new
-
-            while not self.game.is_over:
-                move = current_player.select_move(self.game.state)
-                self.game.play(move)
-                current_player = agent_old if current_player == agent_new else agent_new
-
-            if self.game.winner is None:
-                logger.info('Iter %2d Game %2d/%2d - Result: tie',
-                            iteration, g + 1, self.config['nn_update_num_games'])
-                ties += 1
-            else:
-                if self.game.winner == self.game.canonical_player:
-                    # first player wins
-                    winner = 'old' if g % 2 == 0 else 'new'
-                else:
-                    winner = 'new' if g % 2 == 0 else 'old'
-                logger.info('Iter %2d Game %2d/%2d - Result: %s (%s) wins',
-                            iteration, g + 1, num_games, self.game.winner, winner)
-                if winner == 'old':
-                    old_wins += 1
-                else:
-                    new_wins += 1
-        return old_wins, new_wins, ties
+        agent_old = AlphaZeroArgMaxAgent(self.game, self.state_encoder, nn_old, self.config)
+        agent_new = AlphaZeroArgMaxAgent(self.game, self.state_encoder, nn_new, self.config)
+        return pit(self.game, self.config['nn_update_num_games'],
+                   agent1=agent_old, agent2=agent_new, agent1_name='old', agent2_name='new')
 
     def _save_nn(self, net: nn.Module, filename: str) -> None:
         torch.save(net.state_dict(), os.path.join(self.config['log_dir'], filename))

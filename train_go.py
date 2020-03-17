@@ -5,10 +5,7 @@ import torch
 import yaml
 
 from alphazero.alphazero.mcts import MonteCarloTreeSearch
-from alphazero.alphazero.nn_modules import AlphaZeroNeuralNet
-from alphazero.alphazero.nn_modules.encoders import SimpleConvNetEncoder
-from alphazero.alphazero.nn_modules.policy_heads import SimpleFullyConnectedPolicyHead
-from alphazero.alphazero.nn_modules.value_heads import SimpleFullyConnectedValueHead
+from alphazero.alphazero.nn_modules.nets import dual_resnet
 from alphazero.alphazero.state_encoders.go_state_encoder import GoStateEncoder
 from alphazero.alphazero.trainer import AlphaZeroTrainer
 from alphazero.games.go import GoGame
@@ -24,17 +21,9 @@ config['device'] = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 if __name__ == '__main__':
     game = GoGame(config['game_size'])
-    state_encoder = GoStateEncoder(config)
+    state_encoder = GoStateEncoder(config['device'], config['num_history'])
 
-    # encoder = LinearEncoder(config)
-    # value_head = LinearValueHead(config)
-    # policy_head = LinearPolicyHead(game.action_space_size, config)
-
-    encoder = SimpleConvNetEncoder(config)
-    value_head = SimpleFullyConnectedValueHead(config)
-    policy_head = SimpleFullyConnectedPolicyHead(game.action_space_size, config)
-
-    net = AlphaZeroNeuralNet(encoder, policy_head, value_head, config)
+    net = dual_resnet(game, config)
     mcts = MonteCarloTreeSearch(game=game,
                                 state_encoder=state_encoder,
                                 nn=net,
